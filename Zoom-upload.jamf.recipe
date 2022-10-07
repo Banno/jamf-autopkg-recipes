@@ -12,8 +12,6 @@
 			<string>Digital - Software</string>
 			<key>NAME</key>
 			<string>Zoom</string>
-			<key>pkgname</key>
-			<string>%NAME%-%version%</string>
 			<key>CONFIG_PLIST</key>
 			<string>&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;
 &lt;!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"&gt;
@@ -62,8 +60,6 @@
 			<dict>
 				<key>Arguments</key>
 				<dict>
-					<key>pkgname</key>
-					<string>Zoom-%version%</string>
 					<key>pkg_category</key>
 					<string>%CATEGORY%</string>
 				</dict>

@@ -3,7 +3,7 @@
 <plist version="1.0">
 	<dict>
 		<key>Description</key>
-		<string>Updates the Latest Policy and Patch Policy for Zoom</string>
+		<string>Updates the Latest Policy for Zoom</string>
 		<key>Identifier</key>
 		<string>com.jackhenry.autopkg.digital-recipes.jamf.Zoom-patch</string>
 		<key>Input</key>
@@ -18,16 +18,6 @@
 			<string>install-zoom</string>
 			<key>POLICY_TEMPLATE</key>
 			<string>JamfPolicyTemplate-Latest.xml</string>
-			<key>PATCH_ENABLED</key>
-			<string>true</string>
-			<key>PATCH_NAME</key>
-			<string>Patch %NAME%</string>
-			<key>PATCH_SOFTWARE_TITLE</key>
-			<string>%NAME%</string>
-			<key>PATCH_SOFTWARE_TITLE_ID</key>
-			<string>33</string>
-			<key>PATCH_TEMPLATE</key>
-			<string>JamfPatchTemplateZoom-TS.xml</string>
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
@@ -47,25 +37,6 @@
 				</dict>
 				<key>Processor</key>
 				<string>com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader</string>
-			</dict>
-			<dict>
-				<key>Arguments</key>
-				<dict>
-					<key>patch_softwaretitle_id</key>
-					<string>%PATCH_SOFTWARE_TITLE_ID%</string>
-					<key>patch_name</key>
-					<string>%PATCH_NAME%</string>
-					<key>patch_softwaretitle</key>
-					<string>%PATCH_SOFTWARE_TITLE%</string>
-					<key>parenthetical_version</key>
-					<string>(11129)</string>
-					<key>patch_template</key>
-					<string>%PATCH_TEMPLATE%</string>
-					<key>replace_patch</key>
-					<string>true</string>
-				</dict>
-				<key>Processor</key>
-				<string>com.github.grahampugh.jamf-upload.processors/JamfPatchUploader</string>
 			</dict>
 		</array>
 	</dict>
