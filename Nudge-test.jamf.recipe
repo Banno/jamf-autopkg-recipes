@@ -3,51 +3,30 @@
 <plist version="1.0">
 	<dict>
 		<key>Description</key>
-		<string>Updates the Latest Policy and Patch Policy for Firefox</string>
+		<string>Updates the Patch Policy for Nudge Testing</string>
 		<key>Identifier</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.Firefox-patch</string>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Nudge-test</string>
 		<key>Input</key>
 		<dict>
 			<key>NAME</key>
-			<string>Firefox</string>
-			<key>POLICY_CATEGORY</key>
-			<string>Digital - Software</string>
-			<key>POLICY_NAME</key>
-			<string>Latest %NAME%</string>
-			<key>POLICY_TRIGGER</key>
-			<string>install-firefox</string>
-			<key>POLICY_TEMPLATE</key>
-			<string>JamfPolicyTemplate-Latest.xml</string>
+			<string>Nudge</string>
 			<key>PATCH_ENABLED</key>
-			<string>true</string>
+			<string>false</string>
 			<key>PATCH_NAME</key>
-			<string>Patch %NAME%</string>
+			<string>Test %NAME%</string>
 			<key>PATCH_SOFTWARE_TITLE</key>
 			<string>%NAME%</string>
 			<key>PATCH_SOFTWARE_TITLE_ID</key>
-			<string>52</string>
+			<string>50</string>
 			<key>PATCH_TEMPLATE</key>
-			<string>JamfPatchTemplate-TS.xml</string>
+			<string>JamfPatchTemplate-Test.xml</string>
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
 		<key>ParentRecipe</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.Firefox-upload</string>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Nudge-upload</string>
 		<key>Process</key>
 		<array>
-			<dict>
-				<key>Arguments</key>
-				<dict>
-					<key>policy_name</key>
-					<string>%POLICY_NAME%</string>
-					<key>policy_template</key>
-					<string>%POLICY_TEMPLATE%</string>
-					<key>replace_policy</key>
-					<string>True</string>
-				</dict>
-				<key>Processor</key>
-				<string>com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader</string>
-			</dict>
 			<dict>
 				<key>Arguments</key>
 				<dict>
