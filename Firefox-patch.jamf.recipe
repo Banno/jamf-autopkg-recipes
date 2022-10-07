@@ -43,7 +43,7 @@
 					<key>policy_template</key>
 					<string>%POLICY_TEMPLATE%</string>
 					<key>replace_policy</key>
-					<string>True</string>
+					<string>true</string>
 				</dict>
 				<key>Processor</key>
 				<string>com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader</string>
@@ -59,6 +59,8 @@
 					<string>%PATCH_SOFTWARE_TITLE%</string>
 					<key>patch_template</key>
 					<string>%PATCH_TEMPLATE%</string>
+					<key>replace_patch</key>
+					<string>true</string>
 				</dict>
 				<key>Processor</key>
 				<string>com.github.grahampugh.jamf-upload.processors/JamfPatchUploader</string>
