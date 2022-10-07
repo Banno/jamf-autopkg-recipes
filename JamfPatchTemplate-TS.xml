@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <patch_policy>
+    <general>
+      <name>%patch_name%</name>
+      <enabled>%PATCH_ENABLED%</enabled>
+      <target_version>%version%</target_version>
+      <distribution_method>selfservice</distribution_method>
+      <allow_downgrade>false</allow_downgrade>
+      <patch_unknown>true</patch_unknown>
+    </general>
+    <scope>
+      <all_computers>true</all_computers>
+    </scope>
+    <user_interaction>
+      <install_button_text>Update</install_button_text>
+      <self_service_description>Update %NAME% for the latest features, improvements, and bug fixes.</self_service_description>
+      <notifications>
+        <notification_enabled>false</notification_enabled>
+      </notifications>
+      <deadlines>
+        <deadline_enabled>false</deadline_enabled>
+      </deadlines>
+    </user_interaction>
+    <software_title_configuration_id>%patch_softwaretitle_id%</software_title_configuration_id>
+  </patch_policy>
