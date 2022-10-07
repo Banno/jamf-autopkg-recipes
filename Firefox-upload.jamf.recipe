@@ -5,21 +5,13 @@
 		<key>Comment</key>
 		<string>Downloads the latest version of Firefox and uploads it to Jamf Pro</string>
 		<key>Identifier</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.Firefox</string>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Firefox-upload</string>
 		<key>Input</key>
 		<dict>
 			<key>CATEGORY</key>
 			<string>Digital - Software</string>
 			<key>NAME</key>
 			<string>Firefox</string>
-			<key>POLICY_CATEGORY</key>
-			<string>Digital - Software</string>
-			<key>POLICY_NAME</key>
-			<string>Latest %NAME%</string>
-			<key>POLICY_TRIGGER</key>
-			<string>install-firefox</string>
-			<key>POLICY_TEMPLATE</key>
-			<string>LatestJamfPolicyTemplate.xml</string>
 			<key>UPDATE_PREDICATE</key>
 			<string>pkg_uploaded == False</string>
 		</dict>
@@ -46,19 +38,6 @@
 				</dict>
 				<key>Processor</key>
 				<string>StopProcessingIf</string>
-			</dict>
-			<dict>
-				<key>Arguments</key>
-				<dict>
-					<key>policy_name</key>
-					<string>%POLICY_NAME%</string>
-					<key>policy_template</key>
-					<string>%POLICY_TEMPLATE%</string>
-					<key>replace_policy</key>
-					<string>True</string>
-				</dict>
-				<key>Processor</key>
-				<string>com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader</string>
 			</dict>
 		</array>
 	</dict>
