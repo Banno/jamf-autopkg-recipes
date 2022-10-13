@@ -27,7 +27,7 @@
 			<key>PATCH_SOFTWARE_TITLE_ID</key>
 			<string>33</string>
 			<key>PATCH_TEMPLATE</key>
-			<string>JamfPatchTemplate-jamfversion-TS.xml</string>
+			<string>JamfPatchTemplate-TS.xml</string>
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
@@ -59,6 +59,8 @@
 					<string>%PATCH_SOFTWARE_TITLE%</string>
 					<key>patch_template</key>
 					<string>%PATCH_TEMPLATE%</string>
+					<key>version</key>
+					<string>%jamfversion%</string>
 					<key>replace_patch</key>
 					<string>true</string>
 				</dict>
