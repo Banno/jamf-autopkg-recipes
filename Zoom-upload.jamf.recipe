@@ -54,7 +54,7 @@
 		<key>MinimumVersion</key>
 		<string>2.3</string>
 		<key>ParentRecipe</key>
-		<string>com.github.mlbz521.pkg.ZoomUS-ForIT</string>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.pkg.Zoom</string>
 		<key>Process</key>
 		<array>
 			<dict>
