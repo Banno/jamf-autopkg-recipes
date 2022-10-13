@@ -19,7 +19,7 @@
 			<key>POLICY_TEMPLATE</key>
 			<string>JamfPolicyTemplate-Latest.xml</string>
 			<key>PATCH_ENABLED</key>
-			<string>true</string>
+			<string>false</string>
 			<key>PATCH_NAME</key>
 			<string>Patch %NAME%</string>
 			<key>PATCH_SOFTWARE_TITLE</key>
