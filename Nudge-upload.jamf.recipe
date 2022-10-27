@@ -14,6 +14,8 @@
 			<string>Nudge</string>
 			<key>TYPE</key>
 			<string>_Suite</string>
+			<key>UPDATE_PREDICATE</key>
+			<string>pkg_uploaded == False</string>
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>

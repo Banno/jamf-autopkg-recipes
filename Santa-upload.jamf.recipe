@@ -12,6 +12,8 @@
 			<string>Digital - Software</string>
 			<key>NAME</key>
 			<string>Google Santa</string>
+			<key>UPDATE_PREDICATE</key>
+			<string>pkg_uploaded == False</string>
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
