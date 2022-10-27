@@ -10,6 +10,8 @@
 		<dict>
 			<key>NAME</key>
 			<string>Google Santa</string>
+			<key>RECIPEOVERRIDE_IDENTIFIER</key>
+			<string>local.jamf.Santa-test</string>
 			<key>POLICY_CATEGORY</key>
 			<string>Digital - Software</string>
 			<key>POLICY_NAME</key>
@@ -35,6 +37,15 @@
 		<string>com.jackhenry.autopkg.digital-recipes.jamf.Santa-test</string>
 		<key>Process</key>
 		<array>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>recipeoverride_identifier</key>
+					<string>%RECIPEOVERRIDE_IDENTIFIER%</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.recipes.preprocessors/LastRecipeRunChecker</string>
+			</dict>
 			<dict>
 				<key>Arguments</key>
 				<dict>
