@@ -10,6 +10,8 @@
 		<dict>
 			<key>NAME</key>
 			<string>Nudge</string>
+			<key>RECIPEOVERRIDE_IDENTIFIER</key>
+			<string>local.jamf.Nudge-test</string>
 			<key>POLICY_CATEGORY</key>
 			<string>Digital - Software</string>
 			<key>POLICY_NAME</key>
@@ -31,10 +33,17 @@
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
-		<key>ParentRecipe</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.Nudge-test</string>
 		<key>Process</key>
 		<array>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>recipeoverride_identifier</key>
+					<string>%RECIPEOVERRIDE_IDENTIFIER%</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.recipes.preprocessors/LastRecipeRunChecker</string>
+			</dict>
 			<dict>
 				<key>Arguments</key>
 				<dict>
