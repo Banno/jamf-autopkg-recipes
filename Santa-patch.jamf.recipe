@@ -33,8 +33,6 @@
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
-		<key>ParentRecipe</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.Santa-test</string>
 		<key>Process</key>
 		<array>
 			<dict>
