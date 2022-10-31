@@ -3,30 +3,51 @@
 <plist version="1.0">
 	<dict>
 		<key>Description</key>
-		<string>Updates the Patch Policy for Google Santa Testing</string>
+		<string>Updates the Latest Policy and Patch Policy for Snagit</string>
 		<key>Identifier</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.Santa-test</string>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Snagit-patch</string>
 		<key>Input</key>
 		<dict>
 			<key>NAME</key>
-			<string>Google Santa</string>
+			<string>Snagit</string>
+			<key>POLICY_CATEGORY</key>
+			<string>Digital - Software</string>
+			<key>POLICY_NAME</key>
+			<string>Latest %NAME%</string>
+			<key>POLICY_TRIGGER</key>
+			<string>install-snagit</string>
+			<key>POLICY_TEMPLATE</key>
+			<string>JamfPolicyTemplate-Latest.xml</string>
 			<key>PATCH_ENABLED</key>
 			<string>false</string>
 			<key>PATCH_NAME</key>
-			<string>Test %NAME%</string>
+			<string>Patch %NAME%</string>
 			<key>PATCH_SOFTWARE_TITLE</key>
 			<string>%NAME%</string>
 			<key>PATCH_SOFTWARE_TITLE_ID</key>
-			<string>31</string>
+			<string>61</string>
 			<key>PATCH_TEMPLATE</key>
-			<string>JamfPatchTemplate-Test.xml</string>
+			<string>JamfPatchTemplate-TS.xml</string>
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
 		<key>ParentRecipe</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.Santa-upload</string>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Snagit-upload</string>
 		<key>Process</key>
 		<array>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>policy_name</key>
+					<string>%POLICY_NAME%</string>
+					<key>policy_template</key>
+					<string>%POLICY_TEMPLATE%</string>
+					<key>replace_policy</key>
+					<string>true</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader</string>
+			</dict>
 			<dict>
 				<key>Arguments</key>
 				<dict>
@@ -43,10 +64,6 @@
 				</dict>
 				<key>Processor</key>
 				<string>com.github.grahampugh.jamf-upload.processors/JamfPatchUploader</string>
-			</dict>
-			<dict>
-				<key>Processor</key>
-				<string>com.github.grahampugh.recipes.postprocessors/LastRecipeRunResult</string>
 			</dict>
 		</array>
 	</dict>

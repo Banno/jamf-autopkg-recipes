@@ -3,22 +3,24 @@
 <plist version="1.0">
 	<dict>
 		<key>Comment</key>
-		<string>Downloads the latest version of Google Santa and uploads it to Jamf Pro</string>
+		<string>Downloads the latest version of Snagit and uploads it to Jamf Pro</string>
 		<key>Identifier</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.Santa-upload</string>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Snagit-upload</string>
 		<key>Input</key>
 		<dict>
 			<key>CATEGORY</key>
 			<string>Digital - Software</string>
 			<key>NAME</key>
-			<string>Google Santa</string>
+			<string>Snagit</string>
+			<key>SNAGIT_KEY</key>
+			<string>9M8CA-BWHC5-NGDCN-6LP27-S998R</string>
 			<key>UPDATE_PREDICATE</key>
 			<string>pkg_uploaded == False</string>
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
 		<key>ParentRecipe</key>
-		<string>com.github.davidbpirie.pkg.GoogleSanta</string>
+		<string>com.github.autopkg.kernsb.pkg.TechSmithSnagit</string>
 		<key>Process</key>
 		<array>
 			<dict>
