@@ -3,23 +3,21 @@
 <plist version="1.0">
 	<dict>
 		<key>Description</key>
-		<string>Updates the Latest Policy and Patch Policy for Google Santa</string>
+		<string>Updates the Latest Policy and Patch Policy for Google Chrome</string>
 		<key>Identifier</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.Santa-patch</string>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Chrome-patch</string>
 		<key>Input</key>
 		<dict>
 			<key>NAME</key>
-			<string>Google Santa</string>
+			<string>Google Chrome</string>
 			<key>POLICY_ENABLED</key>
 			<string>false</string>
-			<key>RECIPEOVERRIDE_IDENTIFIER</key>
-			<string>local.jamf.Santa-test</string>
 			<key>POLICY_CATEGORY</key>
 			<string>Digital - Software</string>
 			<key>POLICY_NAME</key>
 			<string>Latest %NAME%</string>
 			<key>POLICY_TRIGGER</key>
-			<string>install-googlesanta</string>
+			<string>installChrome</string>
 			<key>POLICY_TEMPLATE</key>
 			<string>JamfPolicyTemplate-Latest.xml</string>
 			<key>PATCH_ENABLED</key>
@@ -29,23 +27,16 @@
 			<key>PATCH_SOFTWARE_TITLE</key>
 			<string>%NAME%</string>
 			<key>PATCH_SOFTWARE_TITLE_ID</key>
-			<string>31</string>
+			<string>29</string>
 			<key>PATCH_TEMPLATE</key>
-			<string>JamfPatchTemplate-Silent.xml</string>
+			<string>JamfPatchTemplate-TS.xml</string>
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
+		<key>ParentRecipe</key>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Chrome-upload</string>
 		<key>Process</key>
 		<array>
-			<dict>
-				<key>Arguments</key>
-				<dict>
-					<key>recipeoverride_identifier</key>
-					<string>%RECIPEOVERRIDE_IDENTIFIER%</string>
-				</dict>
-				<key>Processor</key>
-				<string>com.github.grahampugh.recipes.preprocessors/LastRecipeRunChecker</string>
-			</dict>
 			<dict>
 				<key>Arguments</key>
 				<dict>
