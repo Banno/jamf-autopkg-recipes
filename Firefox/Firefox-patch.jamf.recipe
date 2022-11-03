@@ -10,6 +10,8 @@
 		<dict>
 			<key>NAME</key>
 			<string>Firefox</string>
+			<key>POLICY_ENABLED</key>
+			<string>false</string>
 			<key>POLICY_CATEGORY</key>
 			<string>Digital - Software</string>
 			<key>POLICY_NAME</key>
