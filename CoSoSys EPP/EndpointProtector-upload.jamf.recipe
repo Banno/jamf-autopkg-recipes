@@ -23,7 +23,12 @@ Example: autopkg run /path/to/EndpointProtector.recipe -p /path/to/pkg</string>
 		<array>
 			<dict>
 				<key>Processor</key>
-				<string>PackageRequired</string>
+				<string>FileFinder</string>
+				<key>Arguments</key>
+				<dict>
+					<key>pattern</key>
+					<string>/Users/autopkg/Desktop/manual_uploads/EndpointProtector*.pkg</string>
+				</dict>
 			</dict>
 			<dict>
 				<key>Processor</key>
@@ -31,7 +36,7 @@ Example: autopkg run /path/to/EndpointProtector.recipe -p /path/to/pkg</string>
 				<key>Arguments</key>
 				<dict>
 					<key>input_path</key>
-					<string>%PKG%</string>
+					<string>%found_filename%</string>
 					<key>requirement</key>
 					<string>identifier "com.cososys.eppclient.daemon" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = TV3T7A76P4</string>
 				</dict>
@@ -42,7 +47,7 @@ Example: autopkg run /path/to/EndpointProtector.recipe -p /path/to/pkg</string>
 				<key>Arguments</key>
 				<dict>
 					<key>source_pkg</key>
-					<string>%PKG%</string>
+					<string>%found_filename%</string>
 					<key>pkg_path</key>
 					<string>%RECIPE_CACHE_DIR%/%NAME%.pkg</string>
 				</dict>
@@ -103,7 +108,7 @@ Example: autopkg run /path/to/EndpointProtector.recipe -p /path/to/pkg</string>
 					<array>
 						<string>%RECIPE_CACHE_DIR%/payload</string>
 						<string>%RECIPE_CACHE_DIR%/unpack</string>
-						<string>%RECIPE_CACHE_DIR%/%NAME%.pkg</string>
+						<string>%found_filename%</string>
 					</array>
 				</dict>
 			</dict>
