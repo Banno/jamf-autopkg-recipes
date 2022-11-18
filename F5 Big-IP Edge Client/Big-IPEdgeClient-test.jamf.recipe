@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>Description</key>
+		<string>Updates the Patch Policy for Big-IP Edge Client Testing</string>
+		<key>Identifier</key>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Big-IPEdgeClient-test</string>
+		<key>Input</key>
+		<dict>
+			<key>NAME</key>
+			<string>Big-IP Edge Client</string>
+			<key>RECIPEOVERRIDE_IDENTIFIER</key>
+			<string>com.jackhenry.autopkg.digital-recipes.jamf.Big-IPEdgeClient-upload</string>
+			<key>PATCH_ENABLED</key>
+			<string>false</string>
+			<key>PATCH_NAME</key>
+			<string>Test %NAME%</string>
+			<key>PATCH_SOFTWARE_TITLE</key>
+			<string>%NAME%</string>
+			<key>PATCH_SOFTWARE_TITLE_ID</key>
+			<string>36</string>
+			<key>PATCH_TEMPLATE</key>
+			<string>JamfPatchTemplate-Test.xml</string>
+		</dict>
+		<key>MinimumVersion</key>
+		<string>2.3</string>
+		<key>Process</key>
+		<array>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>recipeoverride_identifier</key>
+					<string>%RECIPEOVERRIDE_IDENTIFIER%</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.recipes.preprocessors/LastRecipeRunChecker</string>
+			</dict>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>patch_softwaretitle_id</key>
+					<string>%PATCH_SOFTWARE_TITLE_ID%</string>
+					<key>patch_name</key>
+					<string>%PATCH_NAME%</string>
+					<key>patch_softwaretitle</key>
+					<string>%PATCH_SOFTWARE_TITLE%</string>
+					<key>patch_template</key>
+					<string>%PATCH_TEMPLATE%</string>
+					<key>replace_patch</key>
+					<string>true</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.jamf-upload.processors/JamfPatchUploader</string>
+			</dict>
+		</array>
+	</dict>
+</plist>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>Comment</key>
+		<string>Placeholder recipe for Big-IP Edge Client. For this workflow you must upload the installer zip file to Jamf, then edit the latest_version.json</string>
+		<key>Identifier</key>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Big-IPEdgeClient-upload</string>
+		<key>Input</key>
+		<dict>
+			<key>NAME</key>
+			<string>Big-IP Edge Client</string>
+		</dict>
+		<key>MinimumVersion</key>
+		<string>2.3</string>
+		<key>Process</key>
+		<array>
+			<dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.recipes.postprocessors/LastRecipeRunResult</string>
+			</dict>
+		</array>
+	</dict>
+</plist>
