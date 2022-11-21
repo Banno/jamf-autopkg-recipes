@@ -4,7 +4,7 @@
       <name>%patch_name%</name>
       <enabled>%PATCH_ENABLED%</enabled>
       <target_version>%version%</target_version>
-      <distribution_method>prompt</distribution_method>
+      <distribution_method>%DISTRIBUTION_METHOD%</distribution_method>
       <allow_downgrade>false</allow_downgrade>
       <patch_unknown>true</patch_unknown>
     </general>

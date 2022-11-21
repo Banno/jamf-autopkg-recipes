@@ -3,27 +3,35 @@
 <plist version="1.0">
 	<dict>
 		<key>Description</key>
-		<string>Updates the Patch Policy for Big-IP Edge Client Testing</string>
+		<string>Updates the Latest Policy and Patch Policy for Big-IP Edge Client</string>
 		<key>Identifier</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.Big-IPEdgeClient-test</string>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Big-IPEdgeClient-patch</string>
 		<key>Input</key>
 		<dict>
 			<key>NAME</key>
 			<string>Big-IP Edge Client</string>
+			<key>POLICY_ENABLED</key>
+			<string>false</string>
 			<key>RECIPEOVERRIDE_IDENTIFIER</key>
 			<string>local.jamf.Big-IPEdgeClient-upload</string>
+			<key>POLICY_CATEGORY</key>
+			<string>Digital - Software</string>
+			<key>POLICY_NAME</key>
+			<string>Latest %NAME%</string>
+			<key>POLICY_TRIGGER</key>
+			<string>install-bigipedgeclient</string>
+			<key>POLICY_TEMPLATE</key>
+			<string>JamfPolicyTemplate-Latest.xml</string>
 			<key>PATCH_ENABLED</key>
 			<string>false</string>
-			<key>DISTRIBUTION_METHOD</key>
-			<string>selfservice</string>
 			<key>PATCH_NAME</key>
-			<string>Test %NAME%</string>
+			<string>Patch %NAME%</string>
 			<key>PATCH_SOFTWARE_TITLE</key>
 			<string>%NAME%</string>
 			<key>PATCH_SOFTWARE_TITLE_ID</key>
 			<string>36</string>
 			<key>PATCH_TEMPLATE</key>
-			<string>JamfPatchTemplate-Test.xml</string>
+			<string>JamfPatchTemplate-TS.xml</string>
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
@@ -37,6 +45,19 @@
 				</dict>
 				<key>Processor</key>
 				<string>com.github.grahampugh.recipes.preprocessors/LastRecipeRunChecker</string>
+			</dict>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>policy_name</key>
+					<string>%POLICY_NAME%</string>
+					<key>policy_template</key>
+					<string>%POLICY_TEMPLATE%</string>
+					<key>replace_policy</key>
+					<string>true</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader</string>
 			</dict>
 			<dict>
 				<key>Arguments</key>

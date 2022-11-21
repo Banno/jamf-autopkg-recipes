@@ -12,6 +12,8 @@
 			<string>Google Santa</string>
 			<key>PATCH_ENABLED</key>
 			<string>false</string>
+			<key>DISTRIBUTION_METHOD</key>
+			<string>prompt</string>
 			<key>PATCH_NAME</key>
 			<string>Test %NAME%</string>
 			<key>PATCH_SOFTWARE_TITLE</key>
