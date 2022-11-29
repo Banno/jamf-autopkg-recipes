@@ -13,7 +13,7 @@
 			<key>POLICY_ENABLED</key>
 			<string>false</string>
 			<key>RECIPEOVERRIDE_IDENTIFIER</key>
-			<string>local.jamf.Big-IPEdgeClient-upload</string>
+			<string>local.jamf.Big-IPEdgeClient-test</string>
 			<key>POLICY_CATEGORY</key>
 			<string>Digital - Software</string>
 			<key>POLICY_NAME</key>

@@ -10,8 +10,6 @@
 		<dict>
 			<key>NAME</key>
 			<string>Big-IP Edge Client</string>
-			<key>RECIPEOVERRIDE_IDENTIFIER</key>
-			<string>local.jamf.Big-IPEdgeClient-upload</string>
 			<key>PATCH_ENABLED</key>
 			<string>false</string>
 			<key>DISTRIBUTION_METHOD</key>
@@ -27,17 +25,10 @@
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
+		<key>ParentRecipe</key>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Big-IPEdgeClient-upload</string>
 		<key>Process</key>
 		<array>
-			<dict>
-				<key>Arguments</key>
-				<dict>
-					<key>recipeoverride_identifier</key>
-					<string>%RECIPEOVERRIDE_IDENTIFIER%</string>
-				</dict>
-				<key>Processor</key>
-				<string>com.github.grahampugh.recipes.preprocessors/LastRecipeRunChecker</string>
-			</dict>
 			<dict>
 				<key>Arguments</key>
 				<dict>
@@ -54,6 +45,10 @@
 				</dict>
 				<key>Processor</key>
 				<string>com.github.grahampugh.jamf-upload.processors/JamfPatchUploader</string>
+			</dict>
+			<dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.recipes.postprocessors/LastRecipeRunResult</string>
 			</dict>
 		</array>
 	</dict>

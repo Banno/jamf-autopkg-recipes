@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+   <dict>
+      <key>Description</key>
+      <string>Takes a provided BIG-IP Edge Client configuration file, builds an installer package, and uploads it to Jamf</string>
+      <key>Identifier</key>
+      <string>com.jackhenry.autopkg.digital-recipes.jamf.Big-IPEdgeClientConfig-upload</string>
+      <key>Input</key>
+      <dict>
+         <key>NAME</key>
+         <string>BIG-IP Edge Client Config</string>
+         <key>SOFTWARETITLE1</key>
+         <string>BIG-IP</string>
+         <key>SOFTWARETITLE2</key>
+         <string>Edge</string>
+         <key>SOFTWARETITLE3</key>
+         <string>Client</string>
+         <key>SOFTWARETITLE4</key>
+         <string>Config</string>
+         <key>CONFIG_VERSION</key>
+         <string>1.0</string>
+         <key>CATEGORY</key>
+         <string>Digital - Software</string>
+         <key>UPDATE_PREDICATE</key>
+         <string>pkg_uploaded == False</string>
+      </dict>
+      <key>MinimumVersion</key>
+      <string>1.0.0</string>
+      <key>Process</key>
+      <array>
+         <dict>
+            <key>Processor</key>
+            <string>PkgRootCreator</string>
+            <key>Arguments</key>
+            <dict>
+               <key>pkgroot</key>
+               <string>%RECIPE_CACHE_DIR%/pkgroot</string>
+               <key>pkgdirs</key>
+               <dict>
+                  <key>Library</key>
+                  <string>0755</string>
+                  <key>Application Support</key>
+                  <string>0755</string>
+                  <key>F5Networks</key>
+                  <string>0755</string>
+                  <key>Scripts</key>
+                  <string>0755</string>
+               </dict>
+            </dict>
+         </dict>
+         <dict>
+            <key>Processor</key>
+            <string>FileMover</string>
+            <key>Arguments</key>
+            <dict>
+               <key>source</key>
+               <string>%RECIPE_CACHE_DIR%/pkgroot/Application Support</string>
+               <key>target</key>
+               <string>%RECIPE_CACHE_DIR%/pkgroot/Library/Application Support</string>
+            </dict>
+         </dict>
+         <dict>
+            <key>Processor</key>
+            <string>FileMover</string>
+            <key>Arguments</key>
+            <dict>
+               <key>source</key>
+               <string>%RECIPE_CACHE_DIR%/pkgroot/F5Networks</string>
+               <key>target</key>
+               <string>%RECIPE_CACHE_DIR%/pkgroot/Library/Application Support/F5Networks</string>
+            </dict>
+         </dict>
+         <dict>
+            <key>Processor</key>
+            <string>FileMover</string>
+            <key>Arguments</key>
+            <dict>
+               <key>source</key>
+               <string>%RECIPE_CACHE_DIR%/pkgroot/Scripts</string>
+               <key>target</key>
+               <string>%RECIPE_CACHE_DIR%/Scripts</string>
+            </dict>
+         </dict>
+         <dict>
+            <key>Processor</key>
+            <string>FileFinder</string>
+            <key>Arguments</key>
+            <dict>
+               <key>pattern</key>
+               <string>/Users/autopkg/Desktop/manual_uploads/config_tmp.f5c</string>
+            </dict>
+         </dict>
+         <dict>
+            <key>Arguments</key>
+            <dict>
+               <key>destination_path</key>
+               <string>%RECIPE_CACHE_DIR%/pkgroot/Library/Application Support/F5Networks/config.f5c</string>
+               <key>source_path</key>
+               <string>%found_filename%</string>
+               <key>overwrite</key>
+               <true/>
+            </dict>
+            <key>Processor</key>
+            <string>Copier</string>
+         </dict>
+         <dict>
+            <key>Processor</key>
+            <string>FileCreator</string>
+            <key>Arguments</key>
+            <dict>
+               <key>file_path</key>
+               <string>%RECIPE_CACHE_DIR%/Scripts/preinstall</string>
+               <key>file_mode</key>
+               <string>0755</string>
+               <key>file_content</key>
+               <string>#!/bin/bash
+
+# Remove existing F5 VPN configuration file before installing new one
+
+ERROR=0
+
+/bin/rm -rf "$3/Library/Application Support/F5Networks/config.f5c"
+
+exit $ERROR</string>
+            </dict>
+         </dict>
+         <dict>
+            <key>Processor</key>
+            <string>PkgCreator</string>
+            <key>Arguments</key>
+            <dict>
+               <key>pkg_request</key>
+               <dict>
+                  <key>pkgroot</key>
+                  <string>%RECIPE_CACHE_DIR%/pkgroot</string>
+                  <key>pkgname</key>
+                  <string>%SOFTWARETITLE1%%SOFTWARETITLE2%%SOFTWARETITLE3%%SOFTWARETITLE4%-%CONFIG_VERSION%</string>
+                  <key>pkgtype</key>
+                  <string>flat</string>
+                  <key>id</key>
+                  <string>com.jackhenry.BigIPEdgeClientConfig.pkg</string>
+                  <key>options</key>
+                  <string>purge_ds_store</string>
+                  <key>scripts</key>
+                  <string>Scripts</string>
+                  <key>version</key>
+                  <string>%CONFIG_VERSION%</string>
+                  <key>chown</key>
+                  <array>
+                     <dict>
+                        <key>path</key>
+                        <string>Library</string>
+                        <key>user</key>
+                        <string>root</string>
+                        <key>group</key>
+                        <string>wheel</string>
+                     </dict>
+                     <dict>
+                        <key>path</key>
+                        <string>Library/Application Support</string>
+                        <key>user</key>
+                        <string>root</string>
+                        <key>group</key>
+                        <string>admin</string>
+                     </dict>
+                     <dict>
+                        <key>path</key>
+                        <string>Library/Application Support/F5Networks</string>
+                        <key>user</key>
+                        <string>root</string>
+                        <key>group</key>
+                        <string>admin</string>
+                     </dict>
+                  </array>
+               </dict>
+            </dict>
+         </dict>
+         <dict>
+            <key>Arguments</key>
+            <dict>
+               <key>path_list</key>
+               <array>
+                  <string>%RECIPE_CACHE_DIR%/pkgroot</string>
+                  <string>%RECIPE_CACHE_DIR%/Scripts</string>
+               </array>
+            </dict>
+            <key>Processor</key>
+            <string>PathDeleter</string>
+         </dict>
+         <dict>
+            <key>Arguments</key>
+            <dict>
+               <key>pkg_category</key>
+               <string>%CATEGORY%</string>
+            </dict>
+            <key>Processor</key>
+            <string>com.github.grahampugh.jamf-upload.processors/JamfPackageUploader</string>
+         </dict>
+         <dict>
+            <key>Arguments</key>
+            <dict>
+               <key>predicate</key>
+               <string>%UPDATE_PREDICATE%</string>
+            </dict>
+            <key>Processor</key>
+            <string>StopProcessingIf</string>
+         </dict>
+      </array>
+   </dict>
+</plist>

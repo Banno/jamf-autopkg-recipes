@@ -4,8 +4,7 @@
 	<dict>
 		<key>Comment</key>
 		<string>Takes the provided EPP package, processes it, and uploads it to Jamf Pro.
-Requires that you manually download the package from EPP and provide it to this recipe.
-Example: autopkg run /path/to/EndpointProtector.recipe -p /path/to/pkg</string>
+Requires that you manually download the package from EPP place it in the Manual Uploads folder</string>
 		<key>Identifier</key>
 		<string>com.jackhenry.autopkg.digital-recipes.jamf.EndpointProtector-upload</string>
 		<key>Input</key>

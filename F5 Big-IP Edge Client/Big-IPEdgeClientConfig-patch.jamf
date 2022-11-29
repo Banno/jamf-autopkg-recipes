@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>Description</key>
+		<string>Updates the Latest Policy for Big-IP Edge Client Configuration</string>
+		<key>Identifier</key>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Big-IPEdgeClientConfig-patch</string>
+		<key>Input</key>
+		<dict>
+			<key>NAME</key>
+			<string>Big-IP Edge Client</string>
+			<key>POLICY_ENABLED</key>
+			<string>false</string>
+			<key>RECIPEOVERRIDE_IDENTIFIER</key>
+			<string>local.jamf.Big-IPEdgeClientConfig-upload</string>
+			<key>POLICY_CATEGORY</key>
+			<string>Digital - Software</string>
+			<key>POLICY_NAME</key>
+			<string>Configure %NAME%</string>
+			<key>POLICY_TRIGGER</key>
+			<string>config-bigipedgeclient</string>
+			<key>POLICY_TEMPLATE</key>
+			<string>JamfPolicyTemplate-Latest.xml</string>
+		</dict>
+		<key>MinimumVersion</key>
+		<string>2.3</string>
+		<key>ParentRecipe</key>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Big-IPEdgeClient-upload</string>
+		<key>Process</key>
+		<array>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>policy_name</key>
+					<string>%POLICY_NAME%</string>
+					<key>policy_template</key>
+					<string>%POLICY_TEMPLATE%</string>
+					<key>replace_policy</key>
+					<string>true</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader</string>
+			</dict>
+		</array>
+	</dict>
+</plist>
