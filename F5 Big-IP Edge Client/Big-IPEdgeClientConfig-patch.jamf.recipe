@@ -26,7 +26,7 @@
 		<key>MinimumVersion</key>
 		<string>2.3</string>
 		<key>ParentRecipe</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.Big-IPEdgeClient-upload</string>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Big-IPEdgeClientConfig-upload</string>
 		<key>Process</key>
 		<array>
 			<dict>
