@@ -30,7 +30,7 @@ Requires that you manually download the package and place it in the Manual Uploa
 				<key>Arguments</key>
 				<dict>
 					<key>pattern</key>
-					<string>/Users/sam.mills/Downloads/*cybereason*.pkg</string>
+					<string>/Users/autopkg/Desktop/manual_uploads/*cybereason*.pkg</string>
 				</dict>
 			</dict>
 			<dict>
