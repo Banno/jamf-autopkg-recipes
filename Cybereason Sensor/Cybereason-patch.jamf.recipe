@@ -28,8 +28,10 @@
 			<string>Patch %NAME%</string>
 			<key>PATCH_SOFTWARE_TITLE</key>
 			<string>%NAME%</string>
-			<key>PATCH_SOFTWARE_TITLE_ID</key>
+			<key>PATCH_SOFTWARE_TITLE_ID_DIGITAL</key>
 			<string>49</string>
+			<key>PATCH_SOFTWARE_TITLE_ID_MEETINGROOMS</key>
+			<string>66</string>
 			<key>PATCH_TEMPLATE</key>
 			<string>JamfPatchTemplate-Silent.xml</string>
 		</dict>
@@ -63,7 +65,24 @@
 				<key>Arguments</key>
 				<dict>
 					<key>patch_softwaretitle_id</key>
-					<string>%PATCH_SOFTWARE_TITLE_ID%</string>
+					<string>%PATCH_SOFTWARE_TITLE_ID_DIGITAL%</string>
+					<key>patch_name</key>
+					<string>%PATCH_NAME%</string>
+					<key>patch_softwaretitle</key>
+					<string>%PATCH_SOFTWARE_TITLE%</string>
+					<key>patch_template</key>
+					<string>%PATCH_TEMPLATE%</string>
+					<key>replace_patch</key>
+					<string>true</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.jamf-upload.processors/JamfPatchUploader</string>
+			</dict>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>patch_softwaretitle_id</key>
+					<string>%PATCH_SOFTWARE_TITLE_ID_MEETINGROOMS%</string>
 					<key>patch_name</key>
 					<string>%PATCH_NAME%</string>
 					<key>patch_softwaretitle</key>
