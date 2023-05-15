@@ -18,7 +18,7 @@
 		<key>MinimumVersion</key>
 		<string>2.3</string>
 		<key>ParentRecipe</key>
-		<string>com.github.precursorca.download.IBMNotifier</string>
+		<string>com.github.precursorca.pkg.IBMNotifier</string>
 		<key>Process</key>
 		<array>
 			<dict>
