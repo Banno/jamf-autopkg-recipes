@@ -12,12 +12,14 @@
 			<string>SAP Privileges</string>
 			<key>POLICY_ENABLED</key>
 			<string>false</string>
+			<key>RECIPEOVERRIDE_IDENTIFIER</key>
+			<string>local.jamf.SAPPrivileges-test</string>
 			<key>POLICY_CATEGORY</key>
 			<string>Digital - Software</string>
 			<key>POLICY_NAME</key>
 			<string>Latest %NAME%</string>
 			<key>POLICY_TRIGGER</key>
-			<string>install-privileges</string>
+			<string>install-sap-privileges</string>
 			<key>POLICY_TEMPLATE</key>
 			<string>JamfPolicyTemplate-Latest.xml</string>
 			<key>PATCH_ENABLED</key>
@@ -29,14 +31,21 @@
 			<key>PATCH_SOFTWARE_TITLE_ID</key>
 			<string>35</string>
 			<key>PATCH_TEMPLATE</key>
-			<string>JamfPatchTemplate-TS.xml</string>
+			<string>JamfPatchTemplate-Silent.xml</string>
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
-		<key>ParentRecipe</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.SAPPrivileges-upload</string>
 		<key>Process</key>
 		<array>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>recipeoverride_identifier</key>
+					<string>%RECIPEOVERRIDE_IDENTIFIER%</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.recipes.preprocessors/LastRecipeRunChecker</string>
+			</dict>
 			<dict>
 				<key>Arguments</key>
 				<dict>
