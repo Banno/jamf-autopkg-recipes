@@ -6,7 +6,7 @@
       <target_version>%version%</target_version>
       <distribution_method>prompt</distribution_method>
       <allow_downgrade>false</allow_downgrade>
-      <patch_unknown>true</patch_unknown>
+      <patch_unknown>false</patch_unknown>
     </general>
     <scope>
       <all_computers>true</all_computers>
