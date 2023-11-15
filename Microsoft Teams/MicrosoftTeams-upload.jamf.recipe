@@ -3,7 +3,7 @@
 <plist version="1.0">
 	<dict>
 		<key>Comment</key>
-		<string>Downloads the latest version of Microsoft Teams and uploads it to Jamf Pro</string>
+		<string>Downloads the latest version of Microsoft Teams (for work or school) and uploads it to Jamf Pro</string>
 		<key>Identifier</key>
 		<string>com.jackhenry.autopkg.digital-recipes.jamf.MicrosoftTeams-upload</string>
 		<key>Input</key>
@@ -11,16 +11,14 @@
 			<key>CATEGORY</key>
 			<string>Digital - Software</string>
 			<key>NAME</key>
-			<string>Microsoft Teams</string>
-			<key>VERSIONTYPE</key>
-			<string>CFBundleGetInfoString</string>
+			<string>Microsoft Teams (work or school)</string>
 			<key>UPDATE_PREDICATE</key>
 			<string>pkg_uploaded == False</string>
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
 		<key>ParentRecipe</key>
-		<string>com.github.rtrouton.pkg.microsoftteams</string>
+		<string>com.github.rtrouton.pkg.microsoftteamsforworkorschool</string>
 		<key>Process</key>
 		<array>
 			<dict>
