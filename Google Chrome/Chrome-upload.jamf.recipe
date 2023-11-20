@@ -18,7 +18,8 @@
 		<key>MinimumVersion</key>
 		<string>2.3</string>
 		<key>ParentRecipe</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.pkg.Chrome</string>
+		<!-- <string>com.jackhenry.autopkg.digital-recipes.jamf.pkg.Chrome</string> -->
+		<string>com.github.autopkg.pkg.googlechromepkg</string>
 		<key>Process</key>
 		<array>
 			<dict>
