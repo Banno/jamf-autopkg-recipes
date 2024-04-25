@@ -28,8 +28,6 @@
 				<dict>
 					<key>patch_softwaretitle</key>
 					<string>%NAME%</string>
-					<key>pkg_name</key>
-					<string>GoogleChrome-%version%.pkg</string>
 					<key>version</key>
 					<string>%version%</string>
 				</dict>
