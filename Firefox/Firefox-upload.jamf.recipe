@@ -12,7 +12,9 @@
 			<string>Digital - Software</string>
 			<key>NAME</key>
 			<string>Firefox</string>
-			<key>UPDATE_PREDICATE</key>
+			<key>UPDATE_PREDICATE_1</key>
+			<string>patch_version_found == False</string>
+			<key>UPDATE_PREDICATE_2</key>
 			<string>pkg_uploaded == False</string>
 		</dict>
 		<key>MinimumVersion</key>
@@ -21,6 +23,26 @@
 		<string>com.github.rtrouton.pkg.Firefox</string>
 		<key>Process</key>
 		<array>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>patch_softwaretitle</key>
+					<string>%NAME%</string>
+					<key>version</key>
+					<string>%version%</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.jamf-upload.processors/JamfPatchChecker</string>
+			</dict>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>predicate</key>
+					<string>%UPDATE_PREDICATE_1%</string>
+				</dict>
+				<key>Processor</key>
+				<string>StopProcessingIf</string>
+			</dict>
 			<dict>
 				<key>Arguments</key>
 				<dict>
@@ -34,7 +56,7 @@
 				<key>Arguments</key>
 				<dict>
 					<key>predicate</key>
-					<string>%UPDATE_PREDICATE%</string>
+					<string>%UPDATE_PREDICATE_2%</string>
 				</dict>
 				<key>Processor</key>
 				<string>StopProcessingIf</string>

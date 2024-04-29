@@ -13,7 +13,9 @@ Requires that you manually download the package from EPP place it in the Manual 
 			<string>Digital - Software</string>
 			<key>NAME</key>
 			<string>Endpoint Protector</string>
-			<key>UPDATE_PREDICATE</key>
+			<key>UPDATE_PREDICATE_1</key>
+			<string>patch_version_found == False</string>
+			<key>UPDATE_PREDICATE_2</key>
 			<string>pkg_uploaded == False</string>
 		</dict>
 		<key>MinimumVersion</key>
@@ -102,6 +104,26 @@ Requires that you manually download the package from EPP place it in the Manual 
 			<dict>
 				<key>Arguments</key>
 				<dict>
+					<key>patch_softwaretitle</key>
+					<string>%NAME%</string>
+					<key>version</key>
+					<string>%version%</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.jamf-upload.processors/JamfPatchChecker</string>
+			</dict>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>predicate</key>
+					<string>%UPDATE_PREDICATE_1%</string>
+				</dict>
+				<key>Processor</key>
+				<string>StopProcessingIf</string>
+			</dict>
+			<dict>
+				<key>Arguments</key>
+				<dict>
 					<key>pkg_category</key>
 					<string>%CATEGORY%</string>
 				</dict>
@@ -112,7 +134,7 @@ Requires that you manually download the package from EPP place it in the Manual 
 				<key>Arguments</key>
 				<dict>
 					<key>predicate</key>
-					<string>%UPDATE_PREDICATE%</string>
+					<string>%UPDATE_PREDICATE_2%</string>
 				</dict>
 				<key>Processor</key>
 				<string>StopProcessingIf</string>
