@@ -65,7 +65,7 @@
 					<key>patch_softwaretitle</key>
 					<string>%NAME%</string>
 					<key>version</key>
-					<string>%version%</string>
+					<string>%jamfversion%</string>
 				</dict>
 				<key>Processor</key>
 				<string>com.github.grahampugh.jamf-upload.processors/JamfPatchChecker</string>
