@@ -38,8 +38,12 @@ Requires that you manually download the package from EPP place it in the Manual 
 				<dict>
 					<key>input_path</key>
 					<string>%found_filename%</string>
-					<key>requirement</key>
-					<string>identifier "com.cososys.eppclient.daemon" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = TV3T7A76P4</string>
+					<key>expected_authority_names</key>
+					<array>
+						<string>Developer ID Installer: CoSoSys (TV3T7A76P4)</string>
+						<string>Developer ID Certification Authority</string>
+						<string>Apple Root CA</string>
+					</array>
 				</dict>
 			</dict>
 			<dict>
