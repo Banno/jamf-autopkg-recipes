@@ -19,7 +19,7 @@
          <key>SOFTWARETITLE4</key>
          <string>Config</string>
          <key>CONFIG_VERSION</key>
-         <string>1.0</string>
+         <string>1.1</string>
          <key>CATEGORY</key>
          <string>Digital - Software</string>
          <key>UPDATE_PREDICATE</key>
