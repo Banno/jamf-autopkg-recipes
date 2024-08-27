@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <policy>
+    <general>
+      <name>Install %NAME%</name>
+      <enabled>%POLICY_ENABLED%</enabled>
+      <trigger>USER_INITIATED</trigger>
+      <frequency>Ongoing</frequency>
+      <category>
+        <name>%POLICY_CATEGORY%</name>
+      </category>
+      <site>
+        <name>Digital</name>
+      </site>
+    </general>
+    <scope>
+      <all_computers>false</all_computers>
+      <computers/>
+      <computer_groups>
+        <computer_group>
+          <name>Digital - All Managed Clients</name>
+        </computer_group>
+      </computer_groups>
+      <exclusions>
+        <computer_groups>
+          <computer_group>
+            <name>Digital - Software - %NAME% Installed</name>
+          </computer_group>
+        </computer_groups>
+      </exclusions>
+    </scope>
+    <self_service>
+      <use_for_self_service>true</use_for_self_service>
+      <self_service_display_name>%NAME%</self_service_display_name>
+      <install_button_text>Install</install_button_text>
+      <reinstall_button_text>Reinstall</reinstall_button_text>
+      <self_service_categories>
+        <category>
+          <name>Digital - Software</name>
+          <display_in>true</display_in>
+        </category>
+      </self_service_categories>
+      <notification>false</notification>
+    </self_service>
+    <maintenance>
+      <recon>true</recon>
+    </maintenance>
+    <files_processes>
+      <run_command>/usr/local/bin/jamf policy -event %POLICY_TRIGGER%</run_command>
+    </files_processes>
+  </policy>
