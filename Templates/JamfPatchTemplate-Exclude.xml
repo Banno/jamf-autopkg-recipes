@@ -9,12 +9,7 @@
       <patch_unknown>false</patch_unknown>
     </general>
     <scope>
-      <all_computers>false</all_computers>
-      <computer_groups>
-        <computer_group>
-          <name>Digital - Team - Ground Control</name>
-        </computer_group>
-      </computer_groups>
+      <all_computers>true</all_computers>
       <exclusions>
         <computer_groups>
           <computer_group>
