@@ -31,7 +31,7 @@ from autopkglib import (
 )  # pylint: disable=import-error
 
 
-class JamfUploaderBase(Processor):
+class JamfUploaderBaseLocal(Processor):
     """A processor for AutoPkg that will upload a category to a Jamf Cloud or on-prem server."""
 
     def api_endpoints(self, object_type):
@@ -674,5 +674,5 @@ class JamfUploaderBase(Processor):
 
 
 if __name__ == "__main__":
-    PROCESSOR = JamfUploaderBase()
+    PROCESSOR = JamfUploaderBaseLocal()
     PROCESSOR.execute_shell()

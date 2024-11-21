@@ -19,12 +19,12 @@ from autopkglib import ProcessorError  # pylint: disable=import-error
 # imports require noqa comments for E402
 sys.path.insert(0, os.path.dirname(__file__))
 
-from JamfUploaderBase import JamfUploaderBase  # noqa: E402
+from JamfUploaderBaseLocal import JamfUploaderBaseLocal  # noqa: E402
 
 __all__ = ["JamfPatchUploader"]
 
 
-class JamfPatchTitleVersioner(JamfUploaderBase):
+class JamfPatchTitleVersioner(JamfUploaderBaseLocal):
     """Determines the latest software version being reported by a Jamf Pro Patch Management Title."""
 
     input_variables = {
