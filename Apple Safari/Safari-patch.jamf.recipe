@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>Description</key>
+		<string>Updates the Latest Patch Policy for Safari</string>
+		<key>Identifier</key>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.Safari-patch</string>
+		<key>Input</key>
+		<dict>
+			<key>NAME</key>
+			<string>Apple Safari</string>
+			<key>PATCH_ENABLED</key>
+			<string>false</string>
+			<key>PATCH_NAME</key>
+			<string>Patch %NAME%</string>
+			<key>PATCH_SOFTWARE_TITLE</key>
+			<string>%NAME%</string>
+			<key>PATCH_SOFTWARE_TITLE_ID</key>
+			<string>59</string>
+			<key>PATCH_TEMPLATE</key>
+			<string>JamfPatchTemplate-Exclude.xml</string>
+			<key>EXCLUDED_SMART_GROUP</key>
+			<string>Digital - macOS Latest Major Version Installed</string>
+		</dict>
+		<key>MinimumVersion</key>
+		<string>2.3</string>
+		<key>Process</key>
+		<array>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>patch_softwaretitle</key>
+					<string>%NAME%</string>
+				</dict>
+				<key>Processor</key>
+				<string>JamfPatchTitleVersioner</string>
+			</dict>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>version</key>
+					<string>%latest_patch_version%</string>
+					<key>pkg_name</key>
+					<string>SafariUpdater</string>
+					<key>patch_softwaretitle_id</key>
+					<string>%PATCH_SOFTWARE_TITLE_ID%</string>
+					<key>patch_name</key>
+					<string>%PATCH_NAME%</string>
+					<key>patch_softwaretitle</key>
+					<string>%PATCH_SOFTWARE_TITLE%</string>
+					<key>patch_template</key>
+					<string>%PATCH_TEMPLATE%</string>
+					<key>replace_patch</key>
+					<string>true</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.jamf-upload.processors/JamfPatchUploader</string>
+			</dict>
+			<dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.recipes.postprocessors/LastRecipeRunResult</string>
+			</dict>
+		</array>
+	</dict>
+</plist>
