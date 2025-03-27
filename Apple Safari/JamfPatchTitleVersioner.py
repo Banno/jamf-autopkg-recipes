@@ -9,11 +9,11 @@ import xml.etree.ElementTree as ET
 
 from autopkglib import ProcessorError  # pylint: disable=import-error
 
-from JamfUploaderBaseLocal import JamfUploaderBase
+from JamfUploaderBaseLocal import JamfUploaderBaseLocal
 
 __all__ = ["JamfPatchTitleVersioner"]
 
-class JamfPatchTitleVersioner(JamfUploaderBase):
+class JamfPatchTitleVersioner(JamfUploaderBaseLocal):
     """Determines the latest software version being reported by a Jamf Pro Patch Management Title."""
 
     input_variables = {

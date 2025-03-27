@@ -39,7 +39,7 @@ from autopkglib import (  # pylint: disable=import-error
 )
 
 
-class JamfUploaderBase(Processor):
+class JamfUploaderBaseLocal(Processor):
     """Common functions used by at least two JamfUploader processors."""
 
     # Global version
