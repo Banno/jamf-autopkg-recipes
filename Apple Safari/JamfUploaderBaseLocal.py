@@ -1,72 +1,129 @@
 #!/usr/local/autopkg/python
+# pylint: disable=invalid-name, too-many-lines
 
 """
-JamfUploaderBase - used only as a template for copying into the JamfUploader processors
-    by G Pugh
+Copyright 2023 Graham Pugh
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
 
 import json
 import os
 import re
 import subprocess
-import uuid
-import xml.etree.cElementTree as ET
+import tempfile
+import xml.etree.ElementTree as ET
 
 from base64 import b64encode
-from collections import namedtuple
-from datetime import datetime
+from collections import abc, namedtuple
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from shutil import rmtree
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
+from uuid import UUID
 from xml.sax.saxutils import escape
 
-# from base64 import b64encode
-# from time import sleep
-# from urllib.parse import quote
-
-from autopkglib import (
-    APLooseVersion,
+from autopkglib import (  # pylint: disable=import-error
     Processor,
     ProcessorError,
-)  # pylint: disable=import-error
+)
 
 
-class JamfUploaderBaseLocal(Processor):
-    """A processor for AutoPkg that will upload a category to a Jamf Cloud or on-prem server."""
+class JamfUploaderBase(Processor):
+    """Common functions used by at least two JamfUploader processors."""
+
+    # Global version
+    __version__ = "2025.3.21.0"
 
     def api_endpoints(self, object_type):
         """Return the endpoint URL from the object type"""
         api_endpoints = {
-            "category": "uapi/v1/categories",
-            "extension_attribute": "JSSResource/computerextensionattributes",
+            "account": "JSSResource/accounts",
+            "advanced_computer_search": "JSSResource/advancedcomputersearches",
+            "advanced_mobile_device_search": "JSSResource/advancedmobiledevicesearches",
+            "api_client": "api/v1/api-integrations",
+            "api_role": "api/v1/api-roles",
+            "app_installer": "api/v1/app-installers/deployments",
+            "app_installers_accept_t_and_c_command": (
+                "api/v1/app-installers/terms-and-conditions/accept"
+            ),
+            "category": "api/v1/categories",
+            "check_in_settings": "api/v3/check-in",
+            "cloud_ldap": "api/v2/cloud-ldaps",
+            "computer_extension_attribute": "api/v1/computer-extension-attributes",
             "computer_group": "JSSResource/computergroups",
+            "computer_inventory_collection_settings": (
+                "api/v1/computer-inventory-collection-settings"
+            ),
+            "computer_prestage": "api/v3/computer-prestages",
+            "configuration_profile": "JSSResource/mobiledeviceconfigurationprofiles",
+            "distribution_point": "JSSResource/distributionpoints",
             "dock_item": "JSSResource/dockitems",
+            "enrollment_settings": "api/v4/enrollment",
+            "enrollment_customization": "api/v2/enrollment-customizations",
+            "failover": "api/v1/sso/failover",
             "icon": "api/v1/icon",
             "jamf_pro_version": "api/v1/jamf-pro-version",
+            "jamf_protect_plans_sync_command": "api/v1/jamf-protect/plans/sync",
+            "jamf_protect_register": "api/v1/jamf-protect/register",
+            "jamf_protect_settings": "api/v1/jamf-protect",
+            "jcds": "api/v1/jcds",
+            "laps_settings": "api/v2/local-admin-password/settings",
             "logflush": "JSSResource/logflush",
+            "ldap_server": "JSSResource/ldapservers",
             "mac_application": "JSSResource/macapplications",
+            "mobile_device_application": "JSSResource/mobiledeviceapplications",
+            "mobile_device_extension_attribute": "JSSResource/mobiledeviceextensionattributes",
+            "mobile_device_group": "JSSResource/mobiledevicegroups",
+            "mobile_device_prestage": "api/v1/mobile-device-prestages",
+            "network_segment": "JSSResource/networksegments",
             "package": "JSSResource/packages",
+            "package_v1": "api/v1/packages",
             "package_upload": "dbfileupload",
             "patch_policy": "JSSResource/patchpolicies",
             "patch_software_title": "JSSResource/patchsoftwaretitles",
+            "oauth": "api/oauth/token",
             "os_x_configuration_profile": "JSSResource/osxconfigurationprofiles",
             "policy": "JSSResource/policies",
             "policy_icon": "JSSResource/fileuploads/policies",
+            "policy_properties_settings": "api/v1/policy-properties",
             "restricted_software": "JSSResource/restrictedsoftware",
-            "script": "uapi/v1/scripts",
+            "self_service_settings": "api/v1/self-service/settings",
+            "script": "api/v1/scripts",
+            "smtp_server_settings": "api/v2/smtp-server",
+            "sso_cert_command": "api/v2/sso/cert",
+            "sso_settings": "api/v3/sso",
             "token": "api/v1/auth/token",
-            "volume_purchasing_locations": "api/v1/volume-purchasing-locations",
+            "volume_purchasing_location": "api/v1/volume-purchasing-locations",
         }
         return api_endpoints[object_type]
 
     def object_types(self, object_type):
         """Return a URL object type from the object type"""
         object_types = {
+            "advanced_computer_search": "advancedcomputersearches",
+            "advanced_mobile_device_search": "advancedmobiledevicesearches",
+            "app_installer": "appinstallers",
             "package": "packages",
             "computer_group": "computergroups",
+            "configuration_profile": "mobiledeviceconfigurationprofiles",
+            "distribution_point": "distributionpoints",
             "dock_item": "dockitems",
+            "mobile_device_group": "mobiledevicegroups",
+            "network_segment": "networksegments",
             "policy": "policies",
-            "extension_attribute": "computerextensionattributes",
+            "computer_extension_attribute": "computerextensionattributes",
+            "mobile_device_extension_attribute": "mobiledeviceextensionattributes",
             "restricted_software": "restrictedsoftware",
             "os_x_configuration_profile": "osxconfigurationprofiles",
         }
@@ -75,10 +132,26 @@ class JamfUploaderBaseLocal(Processor):
     def object_list_types(self, object_type):
         """Return a XML dictionary type from the object type"""
         object_list_types = {
+            "account": "accounts",
+            "advanced_computer_search": "advanced_computer_searches",
+            "advanced_mobile_device_search": "advanced_mobile_device_searches",
+            "api_client": "api_clients",
+            "api_role": "api_roles",
+            "app_installer": "app_installers",
+            "category": "categories",
             "computer_group": "computer_groups",
+            "computer_prestage": "computer_prestages",
+            "configuration_profile": "configuration_profiles",
             "dock_item": "dock_items",
-            "extension_attribute": "computer_extension_attributes",
+            "distribution_point": "distribution_points",
+            "computer_extension_attribute": "computer_extension_attributes",
+            "ldap_server": "ldap_servers",
             "mac_application": "mac_applications",
+            "mobile_device_application": "mobile_device_applications",
+            "mobile_device_extension_attribute": "mobile_device_extension_attributes",
+            "mobile_device_group": "mobile_device_groups",
+            "mobile_device_prestage": "mobile_device_prestages",
+            "network_segment": "network_segments",
             "os_x_configuration_profile": "os_x_configuration_profiles",
             "package": "packages",
             "patch_policy": "patch_policies",
@@ -86,84 +159,227 @@ class JamfUploaderBaseLocal(Processor):
             "policy": "policies",
             "restricted_software": "restricted_software",
             "script": "scripts",
+            "self_service_settings": "self_service_settings",
         }
         return object_list_types[object_type]
 
-    def write_json_file(self, data, tmp_dir="/tmp/jamf_upload"):
+    def get_namekey(self, object_type):
+        """Return the name key that identifies the object"""
+        namekey = "name"
+        if object_type in (
+            "api_client",
+            "computer_prestage",
+            "mobile_device_prestage",
+            "enrollment_customization",
+        ):
+            namekey = "displayName"
+        return namekey
+
+    def get_namekey_path(self, object_type, namekey):
+        """Return the namekey path in Xpath format"""
+        # define xpath for name based on object type
+        if object_type in (
+            "policy",
+            "os_x_configuration_profile",
+            "configuration_profile",
+            "mac_application",
+            "mobile_device_application",
+            "patch_policy",
+            "restricted_software",
+        ):
+            namekey_path = f"general/{namekey}"
+        else:
+            namekey_path = namekey
+        return namekey_path
+
+    def write_json_file(self, data):
         """dump some json to a temporary file"""
-        self.make_tmp_dir(tmp_dir)
-        tf = os.path.join(tmp_dir, f"jamf_upload_{str(uuid.uuid4())}.json")
-        with open(tf, "w") as fp:
+        tf = self.init_temp_file(suffix=".json")
+        with open(tf, "w", encoding="utf-8") as fp:
             json.dump(data, fp)
         return tf
 
-    def write_token_to_json_file(self, url, data, token_file="/tmp/jamf_upload_token"):
-        """dump the token and expiry as json to a temporary file"""
-        data["url"] = url
-        with open(token_file, "w") as fp:
+    def write_token_to_json_file(self, jamf_url, jamf_user, data):
+        """dump the token, expiry, url and user as json to an instance-specific token file"""
+        url_specific_dir = self.make_url_specific_dir(jamf_url)
+        token_file = os.path.join(url_specific_dir, "token_from_jamf_upload.txt")
+        data["url"] = jamf_url
+        data["user"] = jamf_user
+        with open(token_file, "w", encoding="utf-8") as fp:
             json.dump(data, fp)
 
-    def write_xml_file(self, data, tmp_dir="/tmp/jamf_upload"):
+    def write_xml_file(self, data):
         """dump some xml to a temporary file"""
-        self.make_tmp_dir(tmp_dir)
         xml_tree = ET.ElementTree(data)
-        tf = os.path.join(tmp_dir, f"jamf_upload_{str(uuid.uuid4())}.xml")
+        tf = self.init_temp_file(suffix=".xml")
         xml_tree.write(tf)
         return tf
 
-    def write_temp_file(self, data, tmp_dir="/tmp/jamf_upload"):
+    def write_temp_file(self, data):
         """dump some text to a temporary file"""
-        self.make_tmp_dir(tmp_dir)
-        tf = os.path.join(tmp_dir, f"jamf_upload_{str(uuid.uuid4())}.txt")
-        with open(tf, "w") as fp:
+        tf = self.init_temp_file(suffix=".txt")
+        with open(tf, "w", encoding="utf-8") as fp:
             fp.write(data)
         return tf
 
-    def make_tmp_dir(self, tmp_dir="/tmp/jamf_upload"):
+    def make_tmp_dir(self, tmp_dir="/tmp/jamf_upload_"):
         """make the tmp directory"""
-        if not os.path.exists(tmp_dir):
-            os.mkdir(tmp_dir)
-        return tmp_dir
+        if not self.env.get("jamfupload_tmp_dir"):
+            base_dir, dir_name = tmp_dir.rsplit("/", 1)
+            self.env["jamfupload_tmp_dir"] = tempfile.mkdtemp(
+                prefix=dir_name, dir=base_dir
+            )
+        return self.env["jamfupload_tmp_dir"]
+
+    def get_netloc(self, jamf_url):
+        """get the FQDN from any URL and replace dots with underscores"""
+        # Parse the URL and extract the netloc (domain)
+        netloc = urlparse(jamf_url).netloc
+        # Replace non-alphanumeric characters with underscores
+        instance_id = re.sub(r"\W+", "_", netloc).strip("_")
+        return instance_id
+
+    def make_url_specific_dir(self, jamf_url, tmp_dir="/tmp/jamf_upload_"):
+        """make the URL-specific directory for storing token and cookies"""
+        cust_id = self.get_netloc(jamf_url)
+        url_specific_dir = f"{tmp_dir}{cust_id}"
+        if not os.path.exists(url_specific_dir):
+            os.mkdir(url_specific_dir)
+        return url_specific_dir
+
+    def init_temp_file(
+        self, prefix="jamf_upload_", suffix=None, dir_name=None, text=True
+    ):
+        """dump some text to a temporary file"""
+        return tempfile.mkstemp(
+            prefix=prefix,
+            suffix=suffix,
+            dir=self.make_tmp_dir() if dir_name is None else dir_name,
+            text=text,
+        )[1]
 
     def get_enc_creds(self, user, password):
         """encode the username and password into a b64-encoded string"""
-        credentials = f"{self.jamf_user}:{self.jamf_password}"
-        enc_creds_bytes = b64encode(credentials.encode("utf-8"))
-        enc_creds = str(enc_creds_bytes, "utf-8")
+        credentials = f"{user}:{password}"
+        enc_creds = str(b64encode(credentials.encode("utf-8")), "utf-8")
         return enc_creds
 
-    def check_api_token(self, url, token_file="/tmp/jamf_upload_token"):
+    def check_api_token(self, jamf_url, jamf_user):
         """Check validity of an existing token"""
+        url_specific_dir = self.make_url_specific_dir(jamf_url)
+        token_file = os.path.join(url_specific_dir, "token_from_jamf_upload.txt")
+        token = ""
+
         if os.path.exists(token_file):
             with open(token_file, "rb") as file:
                 data = json.load(file)
                 # check that there is a 'token' key
                 try:
                     self.output(
-                        f"Checking {data['url']} against {url}", verbose_level=2
+                        f"Checking {data['url']} against {jamf_url}", verbose_level=2
                     )
-                    if data["url"] == url:
+                    if data["url"] == jamf_url and data["user"] == jamf_user:
                         self.output(
-                            "URL for token matches current request", verbose_level=2
+                            "URL and user for token matches current request",
+                            verbose_level=2,
                         )
                         if data["token"]:
-                            # check if it's expired or not
-                            expires = datetime.strptime(
-                                data["expires"].split(".")[0], "%Y-%m-%dT%H:%M:%S"
-                            )
-                            if expires > datetime.utcnow():
-                                self.output("Existing token is valid")
-                                return data["token"]
+                            try:
+                                # check if it's expired or not
+                                # this may not always work due to inconsistent
+                                # ISO 8601 time format in the expiry token,
+                                # so we look for a ValueError
+
+                                # Convert the strings to datetime objects with UTC timezone
+                                expires_datetime = datetime.strptime(
+                                    data["expires"], "%Y-%m-%dT%H:%M:%S.%fZ"
+                                ).replace(tzinfo=timezone.utc)
+
+                                now_datetime = datetime.now(timezone.utc)
+
+                                if expires_datetime > now_datetime:
+                                    self.output("Existing token is valid")
+                                    token = data["token"]
+                                else:
+                                    self.output(
+                                        f"Existing token expired - {data['expires']} vs {datetime.now(timezone.utc)}"
+                                    )
+
+                            except ValueError:
+                                self.output(
+                                    "Token expiry could not be parsed", verbose_level=2
+                                )
                         else:
                             self.output("Token not found in file", verbose_level=2)
-                except KeyError:
-                    pass
-        self.output("No existing valid token found", verbose_level=2)
+                    else:
+                        self.output(
+                            "URL or user do not match current token request",
+                            verbose_level=2,
+                        )
+                except KeyError as e:
+                    self.output(
+                        f"Some other error: {e}",
+                        verbose_level=2,
+                    )
+        else:
+            self.output("No existing valid token found", verbose_level=2)
+        return token
 
-    def get_api_token(self, jamf_url, enc_creds):
-        """get a token for the Jamf Pro API or Classic API for Jamf Pro 10.35+"""
+    def get_api_token_from_oauth(self, jamf_url="", client_id="", client_secret=""):
+        """get a token for the Jamf Pro API or Classic API using OAuth"""
+        if client_id and client_secret:
+            url = jamf_url + "/" + self.api_endpoints("oauth")
+            additional_curl_opts = [
+                "--data-urlencode",
+                f"client_id={client_id}",
+                "--data-urlencode",
+                "grant_type=client_credentials",
+                "--data-urlencode",
+                f"client_secret={client_secret}",
+            ]
+            r = self.curl(
+                request="POST",
+                url=url,
+                additional_curl_opts=additional_curl_opts,
+                endpoint_type="oauth",
+            )
+            output = r.output
+            if r.status_code == 200:
+                try:
+                    token = str(output["access_token"])
+                    expires_in = output["expires_in"]
+                    # convert "expires_in" value to a timestamp to match basic auth method
+                    expires_timestamp = datetime.now(timezone.utc) + timedelta(
+                        seconds=expires_in
+                    )
+                    expires_str = datetime.strptime(
+                        str(expires_timestamp).removesuffix("+00:00"),
+                        "%Y-%m-%d %H:%M:%S.%f",
+                    )
+                    expires = expires_str.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+                    # write the data to a file
+                    self.write_token_to_json_file(jamf_url, client_id, output)
+                    self.output("Session token received")
+                    self.output(f"Token: {token}", verbose_level=2)
+                    self.output(f"Expires: {expires}", verbose_level=2)
+                    return token
+                except KeyError:
+                    self.output("ERROR: No token received")
+            else:
+                self.output("ERROR: No token received")
+        else:
+            self.output("ERROR: Insufficient credentials provided")
+
+    def get_api_token_from_basic_auth(self, jamf_url="", jamf_user="", password=""):
+        """get a token for the Jamf Pro API or Classic API using basic auth"""
+        enc_creds = self.get_enc_creds(jamf_user, password)
         url = jamf_url + "/" + self.api_endpoints("token")
-        r = self.curl(request="POST", url=url, enc_creds=enc_creds)
+        r = self.curl(
+            request="POST",
+            url=url,
+            enc_creds=enc_creds,
+        )
         output = r.output
         if r.status_code == 200:
             try:
@@ -171,7 +387,7 @@ class JamfUploaderBaseLocal(Processor):
                 expires = str(output["expires"])
 
                 # write the data to a file
-                self.write_token_to_json_file(jamf_url, output)
+                self.write_token_to_json_file(jamf_url, jamf_user, output)
                 self.output("Session token received")
                 self.output(f"Token: {token}", verbose_level=2)
                 self.output(f"Expires: {expires}", verbose_level=2)
@@ -179,51 +395,61 @@ class JamfUploaderBaseLocal(Processor):
             except KeyError:
                 self.output("ERROR: No token received")
         else:
-            self.output("ERROR: No token received")
+            self.output(f"ERROR: No token received (HTTP response {r.status_code})")
 
-    def handle_classic_auth(self, url, user, password):
-        """figure out which auth to use"""
-        # check for existing token
-        self.output("Checking for existing authentication token", verbose_level=2)
-        token = self.check_api_token(url)
+    def handle_api_auth(
+        self, jamf_url, jamf_user="", password="", client_id="", client_secret=""
+    ):
+        """obtain token using basic auth"""
 
-        enc_creds = self.get_enc_creds(user, password)
-
-        # if no valid token, get one
-        if not token:
-            self.output("Getting an authentication token", verbose_level=2)
-            token = self.get_api_token(url, enc_creds)
-
-        # if token, verify Jamf Pro version
-        if token:
-            if self.validate_jamf_pro_version(url, token):
-                self.output("Token auth will be used, ", verbose_level=2)
-                send_creds = ""
+        # first try to get the account and password from the Keychain
+        user_from_kc, pass_from_kc = self.keychain_get_creds(
+            jamf_url, jamf_user, client_id
+        )
+        if user_from_kc and pass_from_kc:
+            if self.is_valid_uuid(user_from_kc):
+                client_id = user_from_kc
+                client_secret = pass_from_kc
+                self.output(
+                    "Using API client credentials found in keychain", verbose_level=2
+                )
             else:
-                self.output("Basic auth will be used, ", verbose_level=2)
-                send_creds = enc_creds
+                jamf_user = user_from_kc
+                password = pass_from_kc
+                self.output(
+                    "Using API account credentials found in keychain", verbose_level=2
+                )
         else:
-            self.output("No token found, basic auth will be used, ", verbose_level=2)
-            send_creds = enc_creds
+            self.output("Credentials not found in keychain", verbose_level=2)
 
-        # return token and classic creds
-        return token, send_creds, enc_creds
-
-    def handle_uapi_auth(self, url, user, password):
-        """obtain token"""
         # check for existing token
         self.output("Checking for existing authentication token", verbose_level=2)
-        token = self.check_api_token(url)
-
-        # if no valid token, get one
-        if not token:
-            enc_creds = self.get_enc_creds(user, password)
-            self.output("Getting an authentication token", verbose_level=2)
-            token = self.get_api_token(url, enc_creds)
-
-        if not token:
-            raise ProcessorError("No token found, cannot continue")
-
+        if client_id and client_secret:
+            token = self.check_api_token(jamf_url, client_id)
+            # if no valid token, get one
+            if not token:
+                self.output(
+                    "Getting an authentication token using OAuth", verbose_level=2
+                )
+                token = self.get_api_token_from_oauth(
+                    jamf_url, client_id, client_secret
+                )
+            if not token:
+                raise ProcessorError("No token found, cannot continue")
+        elif jamf_user and password:
+            token = self.check_api_token(jamf_url, jamf_user)
+            # if no valid token, get one
+            if not token:
+                self.output(
+                    "Getting an authentication token using Basic Auth", verbose_level=2
+                )
+                token = self.get_api_token_from_basic_auth(
+                    jamf_url, jamf_user, password
+                )
+            if not token:
+                raise ProcessorError("No token found, cannot continue")
+        else:
+            raise ProcessorError("Insufficient credentials provided, cannot continue")
         # return token and classic creds
         return token
 
@@ -240,8 +466,9 @@ class JamfUploaderBaseLocal(Processor):
         token="",
         enc_creds="",
         data="",
-        additional_headers="",
-        force_xml=False,
+        additional_curl_opts="",
+        endpoint_type="",
+        accept_header="",
     ):
         """
         Build a curl command based on request type (GET, POST, PUT, PATCH, DELETE).
@@ -264,14 +491,18 @@ class JamfUploaderBaseLocal(Processor):
         Authentication for the webhooks is achieved with a preconfigured token.
         """
         tmp_dir = self.make_tmp_dir()
-        headers_file = os.path.join(tmp_dir, "curl_headers_from_jamf_upload.txt")
-        output_file = os.path.join(tmp_dir, "curl_output_from_jamf_upload.txt")
-        cookie_jar = os.path.join(tmp_dir, "curl_cookies_from_jamf_upload.txt")
+        url_specific_dir = self.make_url_specific_dir(url)
+        headers_file = os.path.join(
+            url_specific_dir, "curl_headers_from_jamf_upload.txt"
+        )
+        output_file = self.init_temp_file(prefix="jamf_upload_", suffix=".txt")
+        cookie_jar = os.path.join(url_specific_dir, "curl_cookies_from_jamf_upload.txt")
 
-        # build the curl command
+        # build the curl command based on supplied endpoint_types
         if url:
             curl_cmd = [
                 "/usr/bin/curl",
+                "--location",
                 "--dump-header",
                 headers_file,
                 url,
@@ -279,51 +510,71 @@ class JamfUploaderBaseLocal(Processor):
         else:
             raise ProcessorError("No URL supplied")
 
+        self.output(f"URL: {url}", verbose_level=3)
+
+        # set User-Agent
+        user_agent = f"JamfUploader/{self.__version__}"
+        curl_cmd.extend(["--header", f"User-Agent: {user_agent}"])
+
+        # allow use of a self-signed certificate
+        # insecure mode
+        if self.env.get("insecure_mode"):
+            curl_cmd.extend(["--insecure"])
+
+        # add request type if specified
         if request:
             curl_cmd.extend(["--request", request])
 
-        if "legacy/packages" not in url and "api/file/v2" not in url:
+        # all endpoints except the JCDS endpoint can be specified silent with show-error
+        if endpoint_type != "jcds":
             curl_cmd.extend(["--silent", "--show-error"])
 
-        # Jamf Pro API authentication
+        # Jamf Pro API authentication headers
         if enc_creds:
             curl_cmd.extend(["--header", f"authorization: Basic {enc_creds}"])
-            curl_cmd.extend(["--output", output_file])
         elif token:
             curl_cmd.extend(["--header", f"authorization: Bearer {token}"])
-            curl_cmd.extend(["--output", output_file])
 
         # icon download
-        if request == "GET" and "ics.services.jamfcloud.com" in url:
+        if endpoint_type == "icon_get":
             output_file = os.path.join(tmp_dir, "icon_download.png")
-            curl_cmd.extend(["--output", output_file])
 
         # 'Accept' for GET and DELETE requests
         # By default, we obtain json as its easier to parse. However,
         # some endpoints (For example the 'patchsoftwaretitle' endpoint)
         # do not return complete json, so we have to get the xml instead.
-        elif request == "GET" or request == "DELETE":
-            curl_cmd.extend(["--output", output_file])
-            if "legacy/packages" not in url:
-                if force_xml:
-                    curl_cmd.extend(["--header", "Accept: application/xml"])
-                else:
-                    curl_cmd.extend(["--header", "Accept: application/json"])
+        elif (request == "GET" or request == "DELETE") and endpoint_type != "jcds":
+            if endpoint_type == "patch_software_title" or accept_header == "xml":
+                curl_cmd.extend(["--header", "Accept: application/xml"])
+            else:
+                curl_cmd.extend(["--header", "Accept: application/json"])
+        # for uploading a package we need to return JSON
+        elif request == "POST" and endpoint_type == "package":
+            curl_cmd.extend(["--header", "Accept: application/json"])
 
-        # icon upload (Classic API) requires special method
-        elif request == "POST" and self.api_endpoints("policy_icon") in url:
+        # icon upload (Jamf Pro API)
+        elif endpoint_type == "package_v1":
+            curl_cmd.extend(["--header", "Content-type: multipart/form-data"])
+            curl_cmd.extend(["--form", f"file=@{data}"])
+
+        # icon upload (Classic API)
+        elif endpoint_type == "policy_icon":
             curl_cmd.extend(["--header", "Content-type: multipart/form-data"])
             curl_cmd.extend(["--form", f"name=@{data}"])
 
-        # icon upload (Jamf Pro API) requires special method
-        elif request == "POST" and self.api_endpoints("icon") in url:
+        # icon upload (Jamf Pro API)
+        elif endpoint_type == "icon_upload":
             curl_cmd.extend(["--header", "Content-type: multipart/form-data"])
             curl_cmd.extend(["--form", f"file=@{data};type=image/png"])
 
+        elif request == "PATCH":
+            if data:
+                # jamf data upload requires upload-file argument
+                curl_cmd.extend(["--upload-file", data])
+
         # Content-Type for POST/PUT
         elif request == "POST" or request == "PUT":
-            curl_cmd.extend(["--output", output_file])
-            if data and "slack" in url or "webhook.office" in url:
+            if endpoint_type == "slack" or endpoint_type == "teams":
                 # slack and teams require a data argument
                 curl_cmd.extend(["--data", data])
                 curl_cmd.extend(["--header", "Content-type: application/json"])
@@ -334,24 +585,35 @@ class JamfUploaderBaseLocal(Processor):
             if "JSSResource" in url:
                 # Jamf Pro API and Slack posts json, but Classic API posts xml
                 curl_cmd.extend(["--header", "Content-type: application/xml"])
-            elif ("/api/" in url or "/uapi/" in url) and "/file/v2/" not in url:
+            elif endpoint_type == "oauth":
+                curl_cmd.extend(
+                    ["--header", "Content-Type: application/x-www-form-urlencoded"]
+                )
+            elif "/api/" in url or "/uapi/" in url:
                 curl_cmd.extend(["--header", "Content-type: application/json"])
-            # note: other endpoints should supply their headers via 'additional_headers'
-        elif request != "GET" and request != "DELETE":
+            # note: other endpoints should supply their headers via 'additional_curl_opts'
+
+        # fail other request types
+        elif request != "GET" and request != "DELETE" and request != "PATCH":
             self.output(f"WARNING: HTTP method {request} not supported")
 
-        # write session for jamf requests
+        # direct output to a file
+        curl_cmd.extend(["--output", output_file])
+        self.output(f"Output file is: {output_file}", verbose_level=3)
+
+        # write session for jamf API requests
         if (
             "/api/" in url
             or "/uapi/" in url
             or "JSSResource" in url
-            or self.api_endpoints("package_upload") in url
-            or "legacy/packages" in url
+            or endpoint_type == "package_upload"
+            or endpoint_type == "jcds"
         ):
             curl_cmd.extend(["--cookie-jar", cookie_jar])
 
             # look for existing session
             if os.path.exists(cookie_jar):
+                self.output("Existing cookie found", verbose_level=2)
                 curl_cmd.extend(["--cookie", cookie_jar])
             else:
                 self.output(
@@ -359,8 +621,13 @@ class JamfUploaderBaseLocal(Processor):
                 )
 
         # additional headers for advanced requests
-        if additional_headers:
-            curl_cmd.extend(additional_headers)
+        if additional_curl_opts:
+            curl_cmd.extend(additional_curl_opts)
+
+        # add custom curl options specified
+        if self.env.get("custom_curl_opts"):
+            custom_curl_opts_list = self.env.get("custom_curl_opts").split()
+            curl_cmd.extend(custom_curl_opts_list)
 
         self.output(f"curl command: {' '.join(curl_cmd)}", verbose_level=3)
 
@@ -372,14 +639,14 @@ class JamfUploaderBaseLocal(Processor):
             "r", ["headers", "status_code", "output"], defaults=(None, None, None)
         )
         try:
-            with open(headers_file, "r") as file:
+            with open(headers_file, "r", encoding="utf-8") as file:
                 headers = file.readlines()
             r.headers = [x.strip() for x in headers]
             for header in r.headers:  # pylint: disable=not-an-iterable
                 if re.match(r"HTTP/(1.1|2)", header) and "Continue" not in header:
                     r.status_code = int(header.split()[1])
-        except IOError:
-            raise ProcessorError(f"WARNING: {headers_file} not found")
+        except IOError as exc:
+            raise ProcessorError(f"WARNING: {headers_file} not found") from exc
         if os.path.exists(output_file) and os.path.getsize(output_file) > 0:
             if "ics.services.jamfcloud.com" in url:
                 r.output = output_file
@@ -397,38 +664,36 @@ class JamfUploaderBaseLocal(Processor):
         """Return a message dependent on the HTTP response"""
         if request == "DELETE":
             action = "deletion"
-        elif request == "PUT":
+        elif request == "PUT" or request == "PATCH":
             action = "update"
         elif request == "POST":
             action = "upload"
         elif request == "GET":
             action = "download"
-
-        if r.status_code == 200 or r.status_code == 201:
-            self.output(f"{endpoint_type} '{obj_name}' {action} successful")
-            return "break"
-        elif r.status_code == 409:
-            self.output(r.output, verbose_level=2)
-            raise ProcessorError(
-                f"WARNING: {endpoint_type} '{obj_name}' {action} failed due to a conflict"
-            )
-        elif r.status_code == 401:
-            raise ProcessorError(
-                f"ERROR: {endpoint_type} '{obj_name}' {action} failed due to permissions error"
-            )
-        elif r.status_code == 405:
-            raise ProcessorError(
-                f"ERROR: {endpoint_type} '{obj_name}' {action} failed due to a "
-                "'method not allowed' error"
-            )
-        elif r.status_code == 500:
-            raise ProcessorError(
-                f"ERROR: {endpoint_type} '{obj_name}' {action} failed due to an "
-                "internal server error"
-            )
         else:
-            self.output(f"WARNING: {endpoint_type} '{obj_name}' {action} failed")
-            self.output(r.output, verbose_level=2)
+            action = "unknown"
+
+        self.output(f"HTTP response: {r.status_code}", verbose_level=2)
+        if r.status_code < 400:
+            if endpoint_type == "jcds":
+                self.output("JCDS2 credentials successfully received", verbose_level=2)
+            elif obj_name:
+                self.output(f"{endpoint_type} '{obj_name}' {action} successful")
+            else:
+                self.output(f"{endpoint_type} {action} successful")
+            return "break"
+        else:
+            self.output("API response:", verbose_level=2)
+            if isinstance(r.output, (bytes, bytearray)):
+                self.output(r.output.decode("utf-8"), verbose_level=2)
+            else:
+                self.output(r.output, verbose_level=2)
+
+            if r.status_code >= 400:
+                raise ProcessorError(
+                    f"ERROR: {endpoint_type} '{obj_name}' {action} failed - "
+                    f"status code {r.status_code}"
+                )
 
     def get_jamf_pro_version(self, jamf_url, token):
         """get the Jamf Pro version so that we can figure out which auth method to use for the
@@ -440,62 +705,77 @@ class JamfUploaderBaseLocal(Processor):
                 jamf_pro_version = str(r.output["version"])
                 self.output(f"Jamf Pro Version: {jamf_pro_version}")
                 return jamf_pro_version
-            except KeyError:
-                self.output("ERROR: No version received")
-                return
-
-    def validate_jamf_pro_version(self, jamf_url, token):
-        """return true if Jamf Pro version is 10.35 or greater"""
-        jamf_pro_version = self.get_jamf_pro_version(jamf_url, token)
-        if APLooseVersion(jamf_pro_version) >= APLooseVersion("10.35.0"):
-            return True
-        else:
-            return False
-
-    def get_uapi_obj_id_from_name(self, jamf_url, object_type, object_name, token):
-        """Get the Jamf Pro API object by name. This requires use of RSQL filtering"""
-        url_filter = f"?page=0&page-size=1000&sort=id&filter=name%3D%3D%22{quote(object_name)}%22"
-        url = jamf_url + "/" + self.api_endpoints(object_type) + url_filter
-        r = self.curl(request="GET", url=url, token=token)
-        if r.status_code == 200:
-            obj_id = 0
-            # output = json.loads(r.output)
-            output = r.output
-            for obj in output["results"]:
-                self.output(f"ID: {obj['id']} NAME: {obj['name']}", verbose_level=3)
-                if obj["name"] == object_name:
-                    obj_id = obj["id"]
-            return obj_id
+            except KeyError as error:
+                self.output(f"ERROR: No version of Jamf Pro received.  Error:\n{error}")
+                raise ProcessorError("No version of Jamf Pro received") from error
 
     def get_api_obj_id_from_name(
-        self, jamf_url, object_name, object_type, enc_creds="", token=""
+        self, jamf_url, object_name, object_type, token, filter_name="name"
     ):
         """check if a Classic API object with the same name exists on the server"""
         # define the relationship between the object types and their URL
-        url = jamf_url + "/" + self.api_endpoints(object_type)
-        r = self.curl(request="GET", url=url, enc_creds=enc_creds, token=token)
+        if "JSSResource" in self.api_endpoints(object_type):
+            # do XML stuff
+            url = jamf_url + "/" + self.api_endpoints(object_type)
+            r = self.curl(request="GET", url=url, token=token)
 
-        if r.status_code == 200:
-            object_list = json.loads(r.output)
-            self.output(
-                object_list, verbose_level=4,
-            )
-            obj_id = 0
-            for obj in object_list[self.object_list_types(object_type)]:
+            if r.status_code == 200:
+                object_list = json.loads(r.output)
                 self.output(
-                    obj, verbose_level=4,
+                    object_list,
+                    verbose_level=4,
                 )
-                # we need to check for a case-insensitive match
-                if obj["name"].lower() == object_name.lower():
-                    obj_id = obj["id"]
-            return obj_id
-        elif r.status_code == 401:
-            raise ProcessorError(
-                "ERROR: Jamf returned status code '401' - Access denied."
+                obj_id = 0
+                for obj in object_list[self.object_list_types(object_type)]:
+                    self.output(
+                        obj,
+                        verbose_level=4,
+                    )
+                    # we need to check for a case-insensitive match
+                    if obj["name"].lower() == object_name.lower():
+                        obj_id = obj["id"]
+                return obj_id
+            elif r.status_code == 401:
+                raise ProcessorError(
+                    "ERROR: Jamf returned status code '401' - Access denied."
+                )
+        else:
+            # do JSON stuff
+            url_filter = (
+                f"?page=0&page-size=1000&sort=id&filter={filter_name}"
+                f"%3D%3D%22{quote(object_name)}%22"
             )
+            url = jamf_url + "/" + self.api_endpoints(object_type) + url_filter
+            r = self.curl(request="GET", url=url, token=token)
+            if r.status_code == 200:
+                obj_id = 0
+                output = r.output
+                for obj in output["results"]:
+                    self.output(
+                        f"ID: {obj.get('id')} NAME: {obj.get(filter_name)}",
+                        verbose_level=3,
+                    )
+                    if obj[filter_name] == object_name:
+                        obj_id = obj["id"]
+                        break
+                return obj_id
+            elif r.status_code == 401:
+                raise ProcessorError(
+                    "ERROR: Jamf returned status code '401' - Access denied."
+                )
 
     def substitute_assignable_keys(self, data, xml_escape=False):
         """substitutes any key in the inputted text using the %MY_KEY% nomenclature"""
+        # if JSS_INVENTORY_NAME is not given, make it equivalent to %NAME%.app
+        # (this is to allow use of legacy JSSImporter group templates)
+        try:
+            self.env["JSS_INVENTORY_NAME"]
+        except KeyError:
+            try:
+                self.env["JSS_INVENTORY_NAME"] = self.env["NAME"] + ".app"
+            except KeyError:
+                pass
+
         # do a four-pass to ensure that all keys are substituted
         loop = 5
         while loop > 0:
@@ -505,22 +785,58 @@ class JamfUploaderBaseLocal(Processor):
                 break
             found_keys = [i.replace("%", "") for i in found_keys]
             for found_key in found_keys:
-                if self.env.get(found_key):
+                if self.env.get(found_key) is not None:
                     self.output(
-                        (
-                            f"Replacing any instances of '{found_key}' with",
-                            f"'{str(self.env.get(found_key))}'",
-                        ),
+                        f"Replacing any instances of '{found_key}' with "
+                        f"'{str(self.env.get(found_key))}'",
                         verbose_level=2,
                     )
-                    if xml_escape:
-                        replacement_key = escape(self.env.get(found_key))
+                    if xml_escape and not isinstance(self.env.get(found_key), int):
+                        replacement_key = escape(str(self.env.get(found_key)))
                     else:
                         replacement_key = self.env.get(found_key)
-                    data = data.replace(f"%{found_key}%", replacement_key)
+                    data = data.replace(f"%{found_key}%", str(replacement_key))
                 else:
-                    self.output(f"WARNING: '{found_key}' has no replacement object!",)
-                    raise ProcessorError("Unsubstitutable key in template found")
+                    self.output(
+                        f"WARNING: '{found_key}' has no replacement object!",
+                    )
+                    raise ProcessorError(
+                        f"Unsubstitutable key in template found: '{found_key}'"
+                    )
+        return data
+
+    def substitute_limited_assignable_keys(
+        self, data, cli_custom_keys, xml_escape=False
+    ):
+        """substitutes any key in the inputted text using the %MY_KEY% nomenclature, limited to
+        an assigned set of replacement keys. This can be used in advance of using
+        substitute_assignable_keys, to ensure that a specific set of keys are substituted in the
+        right order.
+        Whenever %MY_KEY% is found in the provided data, it is replaced with the assigned
+        value of MY_KEY. A five-times pass-through is done to ensure that all keys are substituted.
+
+        Optionally, if the xml_escape key is set, the value is escaped for XML special characters.
+        This is designed primarily to account for ampersands in the substituted strings.
+        """
+        loop = 5
+        while loop > 0:
+            loop = loop - 1
+            found_keys = re.findall(r"\%\w+\%", data)
+            if not found_keys:
+                break
+            found_keys = [i.replace("%", "") for i in found_keys]
+            for found_key in found_keys:
+                if cli_custom_keys.get(found_key):
+                    self.output(
+                        f"Replacing any instances of '{found_key}' with "
+                        f"'{str(cli_custom_keys[found_key])}'",
+                        verbose_level=2,
+                    )
+                    if xml_escape and not isinstance(self.env.get(found_key), int):
+                        replacement_key = escape(cli_custom_keys[found_key])
+                    else:
+                        replacement_key = cli_custom_keys[found_key]
+                    data = data.replace(f"%{found_key}%", str(replacement_key))
         return data
 
     def get_path_to_file(self, filename):
@@ -529,7 +845,8 @@ class JamfUploaderBaseLocal(Processor):
         1. RecipeOverrides directory/ies
         2. Same directory as the recipe
         3. Same repo (recipe search directory) as the recipe
-        4. Parent recipe's repo (recipe search directory) if recipe is an override"""
+        4. Parent recipe's repo (recipe search directory) if recipe is an override
+        Relative paths also work."""
         recipe_dir = self.env.get("RECIPE_DIR")
         recipe_dir_path = Path(os.path.expanduser(recipe_dir))
         filepath = os.path.join(recipe_dir, filename)
@@ -601,69 +918,124 @@ class JamfUploaderBaseLocal(Processor):
                         self.output(f"File found at: {matched_filepath}")
                         return matched_filepath
 
-    def get_api_obj_value_from_id(
-        self, jamf_url, object_type, obj_id, obj_path, enc_creds="", token=""
+    def get_all_api_objects(self, jamf_url, object_type, token=""):
+        """get a list of all objects of a particular type"""
+        # Get all objects from Jamf Pro as JSON object
+        self.output(f"Getting all {self.api_endpoints(object_type)} from {jamf_url}")
+
+        # check for existing
+        url = f"{jamf_url}/{self.api_endpoints(object_type)}"
+        r = self.curl(request="GET", url=url, token=token)
+
+        # for Classic API
+        if "JSSResource" in url:
+            object_list = json.loads(r.output)[self.object_list_types(object_type)]
+            self.output(f"List of objects:\n{object_list}", verbose_level=3)
+
+        # for Jamf Pro API
+        else:
+            object_list = r.output["results"]
+            self.output(f"List of objects:\n{object_list}", verbose_level=3)
+
+        return object_list
+
+    def get_api_obj_contents_from_id(
+        self, jamf_url, object_type, obj_id, obj_path="", token=""
     ):
-        """get the value of an item in a Classic API object"""
+        """get the full contents or the value of an item in a Classic or Jamf Pro API object"""
+        # define the relationship between the object types and their URL
+        if "JSSResource" in self.api_endpoints(object_type):
+            # do XML stuff
+            url = f"{jamf_url}/{self.api_endpoints(object_type)}/id/{obj_id}"
+            request = "GET"
+            r = self.curl(request=request, url=url, token=token, accept_header="xml")
+            if r.status_code == 200:
+                # Parse response as xml
+                try:
+                    obj_xml = ET.fromstring(r.output)
+                except ET.ParseError as xml_error:
+                    raise ProcessorError from xml_error
+                if obj_path:
+                    obj_content = obj_xml.find(obj_path)
+                else:
+                    ET.indent(obj_xml)
+                    obj_content = ET.tostring(obj_xml, encoding="UTF-8").decode("UTF-8")
+                return obj_content
+        else:
+            # do JSON stuff
+            url = f"{jamf_url}/{self.api_endpoints(object_type)}/{obj_id}"
+            request = "GET"
+            r = self.curl(request=request, url=url, token=token, accept_header="json")
+            if r.status_code == 200:
+                # Parse response as json
+                # obj_content = json.loads(r.output)
+                obj_content = r.output
+                self.output(
+                    obj_content,
+                    verbose_level=4,
+                )
+                return obj_content
+
+    def get_api_obj_value_from_id(self, jamf_url, object_type, obj_id, obj_path, token):
+        """get the value of an item in a Classic or Jamf Pro API object"""
         # define the relationship between the object types and their URL
         # we could make this shorter with some regex but I think this way is clearer
-        url = "{}/{}/id/{}".format(jamf_url, self.api_endpoints(object_type), obj_id)
-        request = "GET"
-        r = self.curl(request=request, url=url, enc_creds=enc_creds, token=token)
-        if r.status_code == 200:
-            obj_content = json.loads(r.output)
-            self.output(obj_content, verbose_level=4)
 
-            # convert an xpath to json
-            xpath_list = obj_path.split("/")
-            value = obj_content[object_type]
-            for i in range(0, len(xpath_list)):
-                if xpath_list[i]:
-                    try:
-                        value = value[xpath_list[i]]
-                        self.output(value, verbose_level=3)
-                    except KeyError:
-                        value = ""
-                        break
-            if value:
-                self.output(
-                    "Value of '{}': {}".format(obj_path, value), verbose_level=2
-                )
-            return value
+        # if we find an object ID or it's an endpoint without IDs, we PUT or PATCH
+        # if we're creating a new object, we POST
+        value = ""
+        if "JSSResource" in self.api_endpoints(object_type):
+            # do XML stuff
+            url = f"{jamf_url}/{self.api_endpoints(object_type)}/id/{obj_id}"
+            request = "GET"
+            r = self.curl(request=request, url=url, token=token)
+            if r.status_code == 200:
+                obj_content = json.loads(r.output)
+                self.output(obj_content, verbose_level=4)
 
-    def substitute_limited_assignable_keys(
-        self, data, cli_custom_keys, xml_escape=False
-    ):
-        """substitutes any key in the inputted text using the %MY_KEY% nomenclature.
-        Whenever %MY_KEY% is found in the provided data, it is replaced with the assigned
-        value of MY_KEY. A five-times passa through is done to ensure that all keys are substituted.
+                # convert an xpath to json
+                xpath_list = obj_path.split("/")
+                value = obj_content[object_type]
 
-        Optionally, if the xml_escape key is set, the value is escaped for XML special characters.
-        This is designed primarily to account for ampersands in the substituted strings."""
-        loop = 5
-        while loop > 0:
-            loop = loop - 1
-            found_keys = re.findall(r"\%\w+\%", data)
-            if not found_keys:
-                break
-            found_keys = [i.replace("%", "") for i in found_keys]
-            for found_key in found_keys:
-                if cli_custom_keys[found_key]:
-                    self.output(
-                        f"Replacing any instances of '{found_key}' with "
-                        f"'{str(cli_custom_keys[found_key])}'",
-                        verbose_level=2,
-                    )
-                    if xml_escape:
-                        replacement_key = escape(cli_custom_keys[found_key])
-                    else:
-                        replacement_key = cli_custom_keys[found_key]
-                    data = data.replace(f"%{found_key}%", replacement_key)
-                else:
-                    self.output(f"WARNING: '{found_key}' has no replacement object!",)
-        return data
+                for _, xpath in enumerate(xpath_list):
+                    if xpath:
+                        try:
+                            value = value[xpath]
+                            self.output(value, verbose_level=3)
+                        except KeyError:
+                            value = ""
+                            break
+            else:
+                raise ProcessorError(f"ERROR: {object_type} of ID {obj_id} not found.")
+        else:
+            url = f"{jamf_url}/{self.api_endpoints(object_type)}/{obj_id}"
+            request = "GET"
+            r = self.curl(request=request, url=url, token=token)
+            if r.status_code == 200:
+                obj_content = r.output
+                self.output(obj_content, verbose_level=4)
+
+                # convert an xpath to json
+                xpath_list = obj_path.split("/")
+                value = obj_content
+
+                for _, xpath in enumerate(xpath_list):
+                    if xpath:
+                        try:
+                            value = value[xpath]
+                            self.output(value, verbose_level=3)
+                        except KeyError:
+                            value = ""
+                            break
+
+            else:
+                raise ProcessorError(f"ERROR: {object_type} of ID {obj_id} not found.")
+        if value:
+            self.output(f"Value of '{obj_path}': {value}", verbose_level=2)
+        return value
 
     def pretty_print_xml(self, xml):
+        """prettifies XML"""
         proc = subprocess.Popen(
             ["xmllint", "--format", "/dev/stdin"],
             stdin=subprocess.PIPE,
@@ -672,7 +1044,373 @@ class JamfUploaderBaseLocal(Processor):
         (output, _) = proc.communicate(xml)
         return output
 
+    def get_existing_scope(self, jamf_url, obj_type, obj_id, token):
+        """return the existing scope"""
+        existing_scope_xml = self.get_api_obj_contents_from_id(
+            jamf_url,
+            obj_type,
+            obj_id,
+            "scope",
+            token,
+        )
+        self.output("Existing scope:", verbose_level=2)
+        self.output(existing_scope_xml, verbose_level=2)
+        return existing_scope_xml
+
+    def replace_scope(self, template_contents, existing_scope):
+        """replace scope with scope from existing item"""
+        self.output("Updating the scope in the template", verbose_level=2)
+
+        # Parse response as xml
+        try:
+            template_contents_xml = ET.fromstring(template_contents)
+        except ET.ParseError as xml_error:
+            raise ProcessorError from xml_error
+
+        if template_contents_xml.find("scope"):
+            # Remove scope element
+            template_contents_xml.remove(template_contents_xml.find("scope"))
+        # Inject scope element into version element
+        template_contents_xml.append(existing_scope)
+        # write back to xml
+        template_contents = ET.tostring(
+            template_contents_xml, encoding="UTF-8", method="xml"
+        )
+        # convert to string
+        template_contents = template_contents.decode("UTF-8")
+        # Print new scope element for debugging
+        self.output(template_contents, verbose_level=2)
+        return template_contents
+
+    def mount_smb(self, mount_share, mount_user, mount_pass):
+        """Mount distribution point."""
+        mount_cmd = [
+            "/usr/bin/osascript",
+            "-e",
+            (
+                f'mount volume "{mount_share}" as user name "{mount_user}" '
+                f'with password "{mount_pass}"'
+            ),
+        ]
+        self.output(
+            f"Mount command: {' '.join(mount_cmd)}",
+            verbose_level=4,
+        )
+
+        r = subprocess.check_output(mount_cmd)
+        self.output(
+            r.decode("ascii"),
+            # r,
+            verbose_level=4,
+        )
+
+    def umount_smb(self, mount_share):
+        """Unmount distribution point."""
+        path = f"/Volumes{urlparse(mount_share).path}"
+        cmd = ["/usr/sbin/diskutil", "unmount", path]
+        try:
+            r = subprocess.check_output(cmd)
+            self.output(
+                r.decode("ascii"),
+                verbose_level=2,
+            )
+        except subprocess.CalledProcessError:
+            self.output("WARNING! Unmount failed.")
+
+    def remove_elements_from_xml(self, object_xml, element):
+        """removes all instances of an object from XML"""
+        for parent in object_xml.findall(f".//{element}/.."):
+            for elem in parent.findall(element):
+                parent.remove(elem)
+
+    def replace_element(self, object_type, existing_object, element_path, new_value):
+        """Replaces a specific element from XML using a path such as 'general/id'."""
+        # Split the path into parts
+        keys = element_path.split("/")
+        if "JSSResource" in self.api_endpoints(object_type):
+            # do XML stuff
+            try:
+                # load object
+                parsed_xml = ""
+                object_xml = ET.fromstring(existing_object)
+                root = ET.ElementTree(object_xml).getroot()
+                parent = root
+                found = None
+
+                # Traverse the XML tree to find the parent of the target element
+                for key in keys:
+                    found = parent.find(key)
+                    if found is not None:
+                        parent = found
+                    else:
+                        self.output(
+                            f"Path '{element_path}' not found in template.",
+                            verbose_level=3,
+                        )
+
+                # Find and replace the target element
+                if found is not None:
+                    parent.text = new_value
+
+                    self.output(
+                        f"Successfully replaced '{element_path}' with '{new_value}'.",
+                        verbose_level=2,
+                    )
+                parsed_xml = ET.tostring(object_xml, encoding="UTF-8")
+            except ET.ParseError as xml_error:
+                raise ProcessorError("Could not extract XML") from xml_error
+            return parsed_xml.decode("UTF-8")
+
+        # do json stuff
+        if not isinstance(existing_object, dict):
+            existing_object = json.loads(existing_object)
+            parent = existing_object
+
+            # Traverse the JSON structure to find the target element
+            for key in keys[:-1]:
+                if key in parent and isinstance(parent[key], dict):
+                    parent = parent[key]
+                else:
+                    raise KeyError(f"Path '{element_path}' not found.")
+
+            # Replace the element's value with the new value
+            last_key = keys[-1]
+            if last_key in parent:
+                parent[last_key] = new_value
+            else:
+                raise KeyError(f"Key '{last_key}' not found in path '{element_path}'.")
+            self.output(
+                f"Successfully replaced '{element_path}' with '{new_value}'.",
+                verbose_level=2,
+            )
+            return json.dumps(existing_object, indent=4)
+
+    def substitute_elements_in_xml(self, object_xml, element, replacement_value):
+        """substitutes all instances of an object from XML with a provided replaceement value"""
+        for parent in object_xml.findall(f".//{element}/.."):
+            for elem in parent.findall(element):
+                # parent.remove(elem)
+                elem.text = replacement_value
+
+    def inject_version_lock(self, existing_object):
+        """PreStages need to add the version lock in order to replace them"""
+        if existing_object:
+            if not isinstance(existing_object, dict):
+                existing_object = json.loads(existing_object)
+                current_version_lock = existing_object["versionLock"]
+                existing_object["versionLock"] = current_version_lock + 1
+                for value in existing_object.values():
+                    value_check = value
+                    if isinstance(value_check, abc.Mapping):
+                        if "versionLock" in value:
+                            current_version_lock = value["versionLock"]
+                            value["versionLock"] = current_version_lock
+            return json.dumps(existing_object, indent=4)
+        return ""
+
+    def parse_downloaded_api_object(
+        self, existing_object, object_type, elements_to_remove
+    ):
+        """Removes or replaces instance-specific items such as ID and computer objects"""
+        # first determine if this object is using Classic API or Jamf Pro
+        if "JSSResource" in self.api_endpoints(object_type):
+            # do XML stuff
+            # Parse response as xml
+            parsed_xml = ""
+            object_xml = ET.fromstring(existing_object)
+            try:
+                # # remove any id tags
+                # self.remove_elements_from_xml(object_xml, "id")
+                # # remove any self service icons
+                # self.remove_elements_from_xml(object_xml, "self_service_icon")
+                # optional array of other elements to remove
+                if elements_to_remove:
+                    for elem in elements_to_remove:
+                        self.output(f"Deleting element {elem}...", verbose_level=2)
+                        self.remove_elements_from_xml(object_xml, elem)
+
+                # for profiles ensure that they are redeployed to all
+                self.substitute_elements_in_xml(object_xml, "redeploy_on_update", "All")
+
+                parsed_xml = ET.tostring(object_xml, encoding="UTF-8")
+            except ET.ParseError as xml_error:
+                raise ProcessorError("Could not extract XML") from xml_error
+            return parsed_xml.decode("UTF-8")
+
+        # do json stuff
+        if existing_object:
+            if not isinstance(existing_object, dict):
+                existing_object = json.loads(existing_object)
+
+            # remove any id-type tags
+            # if "id" in existing_object:
+            #     existing_object.pop("id")
+            # if "categoryId" in existing_object:
+            #     existing_object.pop("categoryId")
+            # if "deviceEnrollmentProgramInstanceId" in existing_object:
+            #     existing_object.pop("deviceEnrollmentProgramInstanceId")
+            # now go one deep and look for more id keys. Hopefully we don't have to go deeper!
+            if elements_to_remove:
+                for elem in elements_to_remove:
+                    for value in existing_object.values():
+                        value_check = value
+                        if isinstance(value_check, abc.Mapping):
+                            if elem in value:
+                                value.pop(elem)
+            return json.dumps(existing_object, indent=4)
+        return ""
+
+    def prepare_template(
+        self,
+        object_type,
+        object_template,
+        object_name=None,
+        xml_escape=False,
+        elements_to_remove=None,
+        namekey_path=None,
+    ):
+        """prepare the object contents"""
+        # import template from file and replace any keys in the template
+        if os.path.exists(object_template):
+            with open(object_template, "r", encoding="utf-8") as file:
+                template_contents = file.read()
+        else:
+            raise ProcessorError("Template does not exist!")
+
+        # parse the template
+        template_contents = self.parse_downloaded_api_object(
+            template_contents, object_type, elements_to_remove
+        )
+
+        # substitute user-assignable keys
+        if object_name:
+            object_name = self.substitute_assignable_keys(object_name)
+
+            # also update the name key to match the given name
+            if namekey_path:
+                template_contents = self.replace_element(
+                    object_type, template_contents, namekey_path, object_name
+                )
+        template_contents = self.substitute_assignable_keys(
+            template_contents, xml_escape
+        )
+        # PreStages need to iterate the versionLock value in order to replace them
+        if object_type == "computer_prestage":
+            template_contents = self.inject_version_lock(template_contents)
+
+        self.output("object data:", verbose_level=2)
+        self.output(template_contents, verbose_level=2)
+
+        # write the template to temp file
+        template_file = self.write_temp_file(template_contents)
+        return object_name, template_file
+
+    def remove_non_printable(self, text):
+        """Remove non-printable characters.
+        This is required when obtaining a password from the keychain
+        """
+        pattern = r"[\x00-\x1F\x7F-\x9F]"
+        return re.sub(pattern, "", text)
+
+    def is_valid_uuid(self, uuid_to_test):
+        """Check if a string is a version 4 UUID"""
+        try:
+            UUID(str(uuid_to_test))
+            self.output(f"{uuid_to_test} is a Client ID", verbose_level=3)
+            return True
+        except ValueError:
+            self.output(f"{uuid_to_test} is an account name", verbose_level=3)
+            return False
+
+    def keychain_get_creds(self, service, jamf_user, client_id):
+        """Get an account name and password from the keychain.
+
+        Args:
+            service: The service name (the Jamf Pro URL in this case)
+            jamf_user: optional user if needed to specify between multiple
+                keychain entries of the same server
+            client_id: optional API Client ID if needed to specify between multiple
+                keychain entries of the same server
+
+        Returns:
+            The account name and password, or `None` for both if not found.
+
+        """
+        if client_id:
+            acct = client_id
+        elif jamf_user:
+            acct = jamf_user
+        else:
+            acct = None
+        passw = None
+        if acct:
+            try:
+                result = subprocess.run(
+                    [
+                        "/usr/bin/security",
+                        "find-internet-password",
+                        "-s",
+                        service,
+                        "-a",
+                        acct,
+                        "-w",
+                        "-g",
+                    ],
+                    text=True,
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                )
+                # self.output(result.stdout, verbose_level=2)
+                passw = self.remove_non_printable(result.stdout)
+            except subprocess.CalledProcessError:
+                pass
+        else:
+            try:
+                result = subprocess.run(
+                    [
+                        "/usr/bin/security",
+                        "find-internet-password",
+                        "-s",
+                        service,
+                        "-g",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                self.output(result.stdout, verbose_level=3)
+                for line in result.stdout.splitlines():
+                    if "acct" in line:
+                        acct = line.split('"')[3]
+            except subprocess.CalledProcessError:
+                pass
+            if acct:
+                try:
+                    result = subprocess.run(
+                        [
+                            "/usr/bin/security",
+                            "find-internet-password",
+                            "-s",
+                            service,
+                            "-a",
+                            acct,
+                            "-w",
+                            "-g",
+                        ],
+                        text=True,
+                        check=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
+                    )
+                    # self.output(result.stdout, verbose_level=2)
+                    passw = self.remove_non_printable(result.stdout)
+                except subprocess.CalledProcessError:
+                    pass
+
+        return acct, passw
+
 
 if __name__ == "__main__":
-    PROCESSOR = JamfUploaderBaseLocal()
+    PROCESSOR = JamfUploaderBase()
     PROCESSOR.execute_shell()
