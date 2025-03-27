@@ -9,7 +9,12 @@ import xml.etree.ElementTree as ET
 
 from autopkglib import ProcessorError  # pylint: disable=import-error
 
-from JamfUploaderBaseLocal import JamfUploaderBaseLocal
+# to use a base module in AutoPkg we need to add this path to the sys.path.
+# this violates flake8 E402 (PEP8 imports) but is unavoidable, so the following
+# imports require noqa comments for E402
+sys.path.insert(0, os.path.dirname(__file__))
+
+from JamfUploaderBaseLocal import JamfUploaderBaseLocal  # noqa: E402
 
 __all__ = ["JamfPatchTitleVersioner"]
 
