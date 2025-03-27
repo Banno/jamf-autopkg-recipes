@@ -5,6 +5,9 @@ JamfPatchTitleVersioner processor for finding the latest software version number
     modified from: https://github.com/jazzace/grahampugh-recipes/blob/baa5432f1378da076b44b71a9dc0d2527b4b770e/JamfUploaderProcessors/JamfPatchTitleVersioner.py
 """
 
+import os.path
+import sys
+
 import xml.etree.ElementTree as ET
 
 from autopkglib import ProcessorError  # pylint: disable=import-error
