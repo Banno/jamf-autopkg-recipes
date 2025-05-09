@@ -3,13 +3,13 @@
 <plist version="1.0">
 	<dict>
 		<key>Description</key>
-		<string>Updates the Patch Policy for NPS Santa Testing</string>
+		<string>Updates the Patch Policy for Google Santa Testing</string>
 		<key>Identifier</key>
 		<string>com.jackhenry.autopkg.digital-recipes.jamf.Santa-test</string>
 		<key>Input</key>
 		<dict>
 			<key>NAME</key>
-			<string>NPS Santa</string>
+			<string>Google Santa</string>
 			<key>PATCH_ENABLED</key>
 			<string>false</string>
 			<key>DISTRIBUTION_METHOD</key>
@@ -19,7 +19,7 @@
 			<key>PATCH_SOFTWARE_TITLE</key>
 			<string>%NAME%</string>
 			<key>PATCH_SOFTWARE_TITLE_ID</key>
-			<string>95</string>
+			<string>31</string>
 			<key>PATCH_TEMPLATE</key>
 			<string>JamfPatchTemplate-Test.xml</string>
 		</dict>
