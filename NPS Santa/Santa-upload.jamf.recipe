@@ -3,7 +3,7 @@
 <plist version="1.0">
 	<dict>
 		<key>Comment</key>
-		<string>Downloads the latest version of Google Santa and uploads it to Jamf Pro</string>
+		<string>Downloads the latest version of NPS Santa and uploads it to Jamf Pro</string>
 		<key>Identifier</key>
 		<string>com.jackhenry.autopkg.digital-recipes.jamf.Santa-upload</string>
 		<key>Input</key>
@@ -11,7 +11,7 @@
 			<key>CATEGORY</key>
 			<string>Digital - Software</string>
 			<key>NAME</key>
-			<string>Google Santa</string>
+			<string>NPS Santa</string>
 			<key>UPDATE_PREDICATE_1</key>
 			<string>patch_version_found == False</string>
 			<key>UPDATE_PREDICATE_2</key>
@@ -20,7 +20,7 @@
 		<key>MinimumVersion</key>
 		<string>2.3</string>
 		<key>ParentRecipe</key>
-		<string>com.github.davidbpirie.pkg.GoogleSanta</string>
+		<string>com.github.davidbpirie.pkg.NorthPoleSecSanta</string>
 		<key>Process</key>
 		<array>
 			<dict>

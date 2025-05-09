@@ -3,13 +3,13 @@
 <plist version="1.0">
 	<dict>
 		<key>Description</key>
-		<string>Updates the Latest Policy and Patch Policy for Google Santa</string>
+		<string>Updates the Latest Policy and Patch Policy for NPS Santa</string>
 		<key>Identifier</key>
 		<string>com.jackhenry.autopkg.digital-recipes.jamf.Santa-patch</string>
 		<key>Input</key>
 		<dict>
 			<key>NAME</key>
-			<string>Google Santa</string>
+			<string>NPS Santa</string>
 			<key>POLICY_ENABLED</key>
 			<string>false</string>
 			<key>RECIPEOVERRIDE_IDENTIFIER</key>
@@ -19,7 +19,7 @@
 			<key>POLICY_NAME</key>
 			<string>Latest %NAME%</string>
 			<key>POLICY_TRIGGER</key>
-			<string>install-googlesanta</string>
+			<string>install-npssanta</string>
 			<key>POLICY_TEMPLATE</key>
 			<string>JamfPolicyTemplate-Latest.xml</string>
 			<key>PATCH_ENABLED</key>
@@ -29,7 +29,7 @@
 			<key>PATCH_SOFTWARE_TITLE</key>
 			<string>%NAME%</string>
 			<key>PATCH_SOFTWARE_TITLE_ID</key>
-			<string>31</string>
+			<string>95</string>
 			<key>PATCH_TEMPLATE</key>
 			<string>JamfPatchTemplate-Silent.xml</string>
 		</dict>
