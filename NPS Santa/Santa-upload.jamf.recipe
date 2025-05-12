@@ -12,10 +12,14 @@
 			<string>Digital - Software</string>
 			<key>NAME</key>
 			<string>NPS Santa</string>
+			<key>TITLE_EDITOR_PATCH_ID</key>
+			<string>9</string>
 			<key>UPDATE_PREDICATE_1</key>
 			<string>patch_version_found == False</string>
 			<key>UPDATE_PREDICATE_2</key>
 			<string>pkg_uploaded == False</string>
+			<key>UPDATE_PREDICATE_3</key>
+			<string>title_updated == False</string>
 		</dict>
 		<key>MinimumVersion</key>
 		<string>2.3</string>
@@ -23,6 +27,24 @@
 		<string>com.github.davidbpirie.pkg.NorthPoleSecSanta</string>
 		<key>Process</key>
 		<array>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>title_id</key>
+					<string>%TITLE_EDITOR_PATCH_ID%</string>
+				</dict>
+				<key>Processor</key>
+				<string>UpdateTitleEditor</string>
+			</dict>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>predicate</key>
+					<string>%UPDATE_PREDICATE_3%</string>
+				</dict>
+				<key>Processor</key>
+				<string>StopProcessingIf</string>
+			</dict>
 			<dict>
 				<key>Arguments</key>
 				<dict>
