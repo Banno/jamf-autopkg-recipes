@@ -125,7 +125,7 @@ class UpdateTitleEditor(PkgPayloadUnpacker, FlatPkgUnpacker):
                                 "Payload")
             payloadmatches = glob(pkgs)
             if len(payloadmatches) == 0:
-                ProcessorError("No Subpackage found by globbing %s" % pkgs)
+                raise ProcessorError("No Subpackage found by globbing %s" % pkgs)
             else:
                 for payloadmatch in payloadmatches:
                     self.env["pkg_payload_path"] = payloadmatch
@@ -133,9 +133,9 @@ class UpdateTitleEditor(PkgPayloadUnpacker, FlatPkgUnpacker):
                     if len(matches) > 0:
                         break
         if len(matches) == 0:
-            ProcessorError("No match found by globbing %s" % app_glob_path)
+            raise ProcessorError("No match found by globbing %s" % app_glob_path)
         elif len(matches) > 1:
-            ProcessorError("Multiple matches found by globbing %s" %
+            raise ProcessorError("Multiple matches found by globbing %s" %
                            app_glob_path)
         else:
             self.output("Found %s" % matches[0])
