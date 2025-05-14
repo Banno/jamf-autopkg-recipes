@@ -374,7 +374,7 @@ class UpdateTitleEditor(PkgPayloadUnpacker, FlatPkgUnpacker):
             return matches, app_glob_path
         else:
             # Afterwards try it directly, fixes it for Virtualbox.
-            app_glob_path = os.path.join(self.env["destination_path"], "**.app")
+            app_glob_path = os.path.join(self.env["destination_path"], "**/*.app")
             return glob(app_glob_path, recursive=True), app_glob_path
 
     def read_binary_plist(self, plist_path):
