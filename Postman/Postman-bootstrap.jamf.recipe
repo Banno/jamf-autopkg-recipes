@@ -29,7 +29,7 @@
 				<key>Arguments</key>
 				<dict>
 					<key>computergroup_template</key>
-					<string>%GROUP_TEMPLATE%</string>
+					<string>%COMPUTERGROUP_TEMPLATE%</string>
 					<key>replace_group</key>
 					<string>True</string>
 				</dict>
