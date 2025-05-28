@@ -3,19 +3,19 @@
 <plist version="1.0">
 	<dict>
 		<key>Description</key>
-		<string>Bootstraps Postman for Jamf Pro. Creates structures and leaves them disabled.</string>
+		<string>Bootstraps Microsoft OneNote for Jamf Pro. Creates policy and leaves it disabled. Creates group to identify installs.</string>
 		<key>Identifier</key>
-		<string>com.jackhenry.autopkg.digital-recipes.jamf.Postman-bootstrap</string>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.MicrosoftOneNote-bootstrap</string>
 		<key>Input</key>
 		<dict>
 			<key>NAME</key>
-			<string>Postman</string>
+			<string>Microsoft OneNote</string>
 			<key>POLICY_ENABLED</key>
 			<string>false</string>
 			<key>POLICY_CATEGORY</key>
 			<string>Digital - Software</string>
 			<key>POLICY_TRIGGER</key>
-			<string>install-postman</string>
+			<string>install-onenote</string>
 			<key>POLICY_TEMPLATE</key>
 			<string>JamfPolicyTemplate-Install.xml</string>
 			<key>GROUP_TEMPLATE</key>

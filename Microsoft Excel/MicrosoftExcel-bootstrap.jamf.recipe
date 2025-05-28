@@ -18,7 +18,7 @@
 			<string>install-excel</string>
 			<key>POLICY_TEMPLATE</key>
 			<string>JamfPolicyTemplate-Install.xml</string>
-			<key>COMPUTERGROUP_TEMPLATE</key>
+			<key>GROUP_TEMPLATE</key>
 			<string>JamfGroupTemplate-Installed.xml</string>
 		</dict>
 		<key>MinimumVersion</key>
