@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>Description</key>
+		<string>Bootstraps Microsoft OneDrive for Jamf Pro. Creates policy and leaves it disabled. Creates group to identify installs.</string>
+		<key>Identifier</key>
+		<string>com.jackhenry.autopkg.digital-recipes.jamf.MicrosoftOneDrive-bootstrap</string>
+		<key>Input</key>
+		<dict>
+			<key>NAME</key>
+			<string>Microsoft OneDrive</string>
+			<key>POLICY_ENABLED</key>
+			<string>false</string>
+			<key>POLICY_CATEGORY</key>
+			<string>Digital - Software</string>
+			<key>POLICY_TRIGGER</key>
+			<string>install-onedrive</string>
+			<key>POLICY_TEMPLATE</key>
+			<string>JamfPolicyTemplate-Install.xml</string>
+		</dict>
+		<key>MinimumVersion</key>
+		<string>2.3</string>
+		<key>Process</key>
+		<array>
+			<dict>
+				<key>Arguments</key>
+				<dict>
+					<key>policy_template</key>
+					<string>%POLICY_TEMPLATE%</string>
+					<key>replace_policy</key>
+					<string>true</string>
+				</dict>
+				<key>Processor</key>
+				<string>com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader</string>
+			</dict>
+		</array>
+	</dict>
+</plist>
